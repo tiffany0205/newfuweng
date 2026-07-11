@@ -65,7 +65,9 @@
         @endforeach
 
         <div class="board-center">
+          <div class="center-ring"></div>
           <div class="game-title">LUCKY JUMP</div>
+          <div class="center-diamond">◆</div>
           <div class="event" id="event">
             {{ $state->is_frozen ? '🧊 已被冰冻，需要一次机会解冻' : '点击骰子开始冒险' }}
           </div>

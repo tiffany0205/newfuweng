@@ -51,9 +51,9 @@ function showPrizeModal(cellType, cellLabel) {
     const closeBtn = document.querySelector('#prizeClose');
 
     const prizes = {
-        prize:  { emoji: '💰', title: '🎊 恭喜中奖!',    detail: '奖品已记录，请联系客服领取' },
-        battery:{ emoji: '🔋', title: '⚡ 获得电池!',    detail: '电池 +1，已自动发放到账户' },
-        vip:    { emoji: '👑', title: '⭐ VIP 升级!',     detail: 'VIP 等级 +1，恭喜晋升!' },
+        prize:  { emoji: '💎', title: '恭喜抽中大奖', detail: '幸运奖励已锁定，可在中奖列表查看发放进度' },
+        battery:{ emoji: '🔋', title: '能量补给到账', detail: '电池奖励已实时发放至你的账户' },
+        vip:    { emoji: '👑', title: '尊享等级提升', detail: 'VIP 等级已提升，新的尊享权益已生效' },
     };
     const p = prizes[cellType] || { emoji: '🎉', title: '🎊 恭喜!', detail: '' };
 
@@ -62,8 +62,25 @@ function showPrizeModal(cellType, cellLabel) {
     name.textContent = cellLabel;
     detail.textContent = p.detail;
 
+    // A short, dependency-free celebration chime. Silently ignored when audio is blocked.
+    try {
+        const audio = new (window.AudioContext || window.webkitAudioContext)();
+        [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => {
+            const oscillator = audio.createOscillator();
+            const gain = audio.createGain();
+            oscillator.type = 'sine';
+            oscillator.frequency.value = frequency;
+            gain.gain.setValueAtTime(0, audio.currentTime + index * .09);
+            gain.gain.linearRampToValueAtTime(.07, audio.currentTime + index * .09 + .02);
+            gain.gain.exponentialRampToValueAtTime(.001, audio.currentTime + index * .09 + .35);
+            oscillator.connect(gain).connect(audio.destination);
+            oscillator.start(audio.currentTime + index * .09);
+            oscillator.stop(audio.currentTime + index * .09 + .38);
+        });
+    } catch (_) {}
+
     // Confetti
-    const colors = ['#d4a840','#e6c060','#c0392b','#4ec878','#4db8e8','#b8a0e0','#e86050'];
+    const colors = ['#f2d692','#d6b36a','#6c8cff','#63d9e6','#65d49c','#ffffff'];
     let html = '';
     for (let i = 0; i < 60; i++) {
         const x = Math.random() * 100;

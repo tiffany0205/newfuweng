@@ -23,24 +23,19 @@
     </div>
 
     <div class="board-wrapper">
+      <div class="board-caption"><span>FORTUNE CIRCUIT</span><span>36 STEPS · LIVE SEASON</span></div>
       <div class="board" id="board">
-        {{-- 4 Corners with turn arrows --}}
-        <div class="corner" style="grid-row:1;grid-column:1;">↘</div>
-        <div class="corner" style="grid-row:1;grid-column:11;">↙</div>
-        <div class="corner" style="grid-row:11;grid-column:11;">↖</div>
-        <div class="corner" style="grid-row:11;grid-column:1;">↗</div>
-
         @foreach($cells as $cell)
           @php
             $pos = $cell->position;
-            if ($pos <= 8) {
-              $row = 1; $col = $pos + 2;
+            if ($pos <= 10) {
+              $row = 1; $col = $pos + 1;
               $arrow = '→'; $dir = 'dir-right';
-            } elseif ($pos <= 17) {
-              $row = $pos - 7; $col = 11;
+            } elseif ($pos <= 18) {
+              $row = $pos - 9; $col = 11;
               $arrow = '↓'; $dir = 'dir-down';
-            } elseif ($pos <= 26) {
-              $row = 11; $col = 28 - $pos;
+            } elseif ($pos <= 28) {
+              $row = 9; $col = 29 - $pos;
               $arrow = '←'; $dir = 'dir-left';
             } else {
               $row = 37 - $pos; $col = 1;
@@ -65,17 +60,19 @@
         @endforeach
 
         <div class="board-center">
-          <div class="center-ring"></div>
-          <div class="game-title">LUCKY JUMP</div>
-          <div class="center-diamond">◆</div>
-          <div class="event" id="event">
-            {{ $state->is_frozen ? '🧊 已被冰冻，需要一次机会解冻' : '点击骰子开始冒险' }}
+          <div class="center-orbit orbit-one"></div><div class="center-orbit orbit-two"></div>
+          <div class="center-copy"><span class="season-label">SEASON 01</span><div class="game-title">LUCKY<br><i>JUMP</i></div><p>ROLL · MOVE · WIN</p></div>
+          <div class="command-card">
+            <div class="event" id="event">
+              {{ $state->is_frozen ? '🧊 已被冰冻，需要一次机会解冻' : '准备好开启下一步好运了吗？' }}
+            </div>
+            <button id="moveButton" class="dice-btn" data-url="{{ route('game.move') }}">
+              <span class="dice-icon" id="dice">✦</span>
+              <strong>{{ $state->is_frozen ? '立即解冻' : '掷出好运' }}</strong>
+            </button>
+            <span class="hint">消耗 1 次机会 · 服务端随机</span>
           </div>
-          <button id="moveButton" class="dice-btn" data-url="{{ route('game.move') }}">
-            <span class="dice-icon" id="dice">🎲</span>
-            <strong>{{ $state->is_frozen ? '立即解冻' : '立即跳棋' }}</strong>
-          </button>
-          <span class="hint">每次消耗 1 次机会</span>
+          <div class="center-rewards"><span>本轮惊喜</span><b>👑 VIP +1</b><b>💎 USDT</b><b>🔋 能量电池</b></div>
         </div>
       </div>
     </div>
@@ -159,11 +156,13 @@
   <div class="modal-overlay" id="prizeOverlay">
     <div class="modal-confetti" id="confetti"></div>
     <div class="modal-card">
+      <div class="prize-rays"></div><div class="prize-halo"></div>
+      <span class="prize-kicker">LUCKY MOMENT</span>
       <span class="prize-emoji" id="prizeEmoji">🎉</span>
-      <div class="prize-title" id="prizeTitle">恭喜中奖!</div>
+      <div class="prize-title" id="prizeTitle">恭喜中奖</div>
       <div class="prize-name" id="prizeName"></div>
       <div class="prize-detail" id="prizeDetail"></div>
-      <button class="prize-btn" id="prizeClose">太棒了!</button>
+      <button class="prize-btn" id="prizeClose">开心收下</button>
     </div>
   </div>
 </template>

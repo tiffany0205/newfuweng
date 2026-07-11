@@ -1,5 +1,7 @@
 import './bootstrap';
 
+function uuidv4(){return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=crypto.getRandomValues(new Uint8Array(1))[0]%16|0;return(c==='x'?r:r&0x3|0x8).toString(16)})}
+
 document.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', async () => {
     await navigator.clipboard.writeText(button.dataset.copy); const old = button.textContent; button.textContent = '已复制'; setTimeout(() => button.textContent = old, 1500);
 }));
@@ -9,7 +11,7 @@ if (moveButton) moveButton.addEventListener('click', async () => {
     if (moveButton.disabled) return; moveButton.disabled = true;
     const event = document.querySelector('#event'); const dice = document.querySelector('#dice'); event.textContent = '骰子滚动中…'; dice.textContent = '🎲';
     try {
-        const response = await fetch(moveButton.dataset.url, {method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content}, body:JSON.stringify({request_id:crypto.randomUUID()})});
+        const response = await fetch(moveButton.dataset.url, {method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content}, body:JSON.stringify({request_id:uuidv4()})});
         const data = await response.json(); if (!response.ok) throw new Error(data.message || '操作失败');
         if (data.dice_value) dice.textContent = ['⚀','⚁','⚂','⚃','⚄','⚅'][data.dice_value-1];
         event.textContent = data.result_text; document.querySelector('#chance').textContent = Math.max(0, Number(document.querySelector('#chance').textContent)-1); document.querySelector('#lap').textContent = data.to_lap; document.querySelector('#position').textContent = data.to_position;

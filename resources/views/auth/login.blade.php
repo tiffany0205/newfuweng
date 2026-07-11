@@ -1,0 +1,3 @@
+@extends('layouts.app') @section('title','用户登录') @section('content')
+<section class="auth-card"><div class="auth-hero">🎲</div><h1>登录活动</h1><p>完成任务赢机会，向排行榜冲刺</p><form method="post" action="{{ route('login.submit') }}">@csrf<label>邮箱<input type="email" name="email" value="{{ old('email') }}" required autofocus></label><label>密码<input type="password" name="password" required></label><label class="check"><input type="checkbox" name="remember"> 记住我</label><button class="primary wide">登录</button></form><p class="center">还没有账号？<a href="{{ route('register') }}">立即注册</a></p><div class="demo-tip">演示账号：demo@example.com / Demo123!</div></section>
+@endsection

@@ -1,0 +1,3 @@
+@extends('layouts.app') @section('title','注册活动账号') @section('content')
+<section class="auth-card"><h1>注册活动账号</h1><form method="post" action="{{ route('register.submit') }}">@csrf<label>昵称<input name="name" value="{{ old('name') }}" required></label><label>邮箱<input type="email" name="email" value="{{ old('email') }}" required></label><label>邀请码（选填）<input name="invite_code" value="{{ old('invite_code',$invite) }}"></label><label>密码<input type="password" name="password" minlength="8" required></label><label>确认密码<input type="password" name="password_confirmation" required></label><button class="primary wide">注册并参加活动</button></form><p class="center"><a href="{{ route('login') }}">返回登录</a></p></section>
+@endsection

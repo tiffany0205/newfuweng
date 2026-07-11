@@ -1,0 +1,245 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 900" style="background:#0a0a1a">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0a0a1a"/><stop offset="100%" stop-color="#12122a"/></linearGradient>
+    <linearGradient id="boardBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1c1c3a"/><stop offset="100%" stop-color="#141430"/></linearGradient>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/></linearGradient>
+    <linearGradient id="startGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#059669"/></linearGradient>
+    <linearGradient id="rewardGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#4f46e5"/></linearGradient>
+    <linearGradient id="freezeGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0284c7"/></linearGradient>
+    <linearGradient id="bombGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f87171"/><stop offset="100%" stop-color="#dc2626"/></linearGradient>
+    <linearGradient id="vipGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#b45309"/></linearGradient>
+    <linearGradient id="batteryGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c084fc"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient>
+    <linearGradient id="centerGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a1a3a"/><stop offset="100%" stop-color="#0f0f28"/></linearGradient>
+    <linearGradient id="btnGrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#ef4444"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="6"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="softGlow"><feGaussianBlur stdDeviation="3"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="cardShadow"><feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#000" flood-opacity="0.4"/></filter>
+    <filter id="btnShadow"><feDropShadow dx="0" dy="6" stdDeviation="16" flood-color="#fbbf24" flood-opacity="0.3"/></filter>
+  </defs>
+
+  <rect width="1100" height="900" fill="url(#bgGrad)"/>
+
+  <!-- ===== TITLE AREA ===== -->
+  <text x="550" y="40" text-anchor="middle" fill="#fbbf24" font-size="20" font-weight="900" letter-spacing="4">LUCKY JUMP · 幸运跳棋大冒险</text>
+  <line x1="400" y1="52" x2="700" y2="52" stroke="url(#goldGrad)" stroke-width="1" opacity="0.3"/>
+
+  <!-- ===== MAIN BOARD ===== -->
+  <g transform="translate(130,75)">
+    <!-- Board outer border -->
+    <rect x="0" y="0" width="840" height="760" rx="28" fill="url(#boardBg)" stroke="#2d2a5e" stroke-width="1.5" filter="url(#cardShadow)"/>
+
+    <!-- Inner border glow line -->
+    <rect x="4" y="4" width="832" height="752" rx="24" fill="none" stroke="#fbbf24" stroke-width="0.5" opacity="0.1"/>
+
+    <!-- ===== TOP ROW: cells 0-8 ===== -->
+    <!-- Cell 0 (Start - left side of top row) -->
+    <g transform="translate(20,18)">
+      <rect x="0" y="0" width="84" height="90" rx="14" fill="url(#startGrad)" stroke="#6ee7b7" stroke-width="1" filter="url(#cardShadow)"/>
+      <text x="42" y="36" text-anchor="middle" fill="#fff" font-size="24">🏁</text>
+      <text x="42" y="58" text-anchor="middle" fill="#d1fae5" font-size="11" font-weight="bold">起 点</text>
+      <text x="42" y="78" text-anchor="middle" fill="#a7f3d0" font-size="10">START</text>
+    </g>
+
+    <!-- Cells 1-7 -->
+    <g transform="translate(114,18)"><rect x="0" y="0" width="84" height="90" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="0.5"/><text x="42" y="50" text-anchor="middle" fill="#4b4780" font-size="28">→</text><text x="42" y="75" text-anchor="middle" fill="#3b3780" font-size="10">2</text></g>
+    <g transform="translate(208,18)"><rect x="0" y="0" width="84" height="90" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="0.5"/><text x="42" y="50" text-anchor="middle" fill="#4b4780" font-size="28">→</text><text x="42" y="75" text-anchor="middle" fill="#3b3780" font-size="10">3</text></g>
+    <g transform="translate(302,18)"><rect x="0" y="0" width="84" height="90" rx="14" fill="url(#rewardGrad)" stroke="#a5b4fc" stroke-width="1"/><text x="42" y="36" text-anchor="middle" fill="#fff" font-size="24">💵</text><text x="42" y="58" text-anchor="middle" fill="#c7d2fe" font-size="11" font-weight="bold">0.01 USDT</text><text x="42" y="78" text-anchor="middle" fill="#a5b4fc" font-size="10">4</text></g>
+    <g transform="translate(396,18)"><rect x="0" y="0" width="84" height="90" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="0.5"/><text x="42" y="50" text-anchor="middle" fill="#4b4780" font-size="28">→</text><text x="42" y="75" text-anchor="middle" fill="#3b3780" font-size="10">5</text></g>
+    <g transform="translate(490,18)"><rect x="0" y="0" width="84" height="90" rx="14" fill="url(#freezeGrad)" stroke="#7dd3fc" stroke-width="1"/><text x="42" y="36" text-anchor="middle" fill="#fff" font-size="24">❄️</text><text x="42" y="58" text-anchor="middle" fill="#bae6fd" font-size="11" font-weight="bold">冰 冻</text><text x="42" y="78" text-anchor="middle" fill="#7dd3fc" font-size="10">6</text></g>
+    <g transform="translate(584,18)"><rect x="0" y="0" width="84" height="90" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="0.5"/><text x="42" y="50" text-anchor="middle" fill="#4b4780" font-size="28">→</text><text x="42" y="75" text-anchor="middle" fill="#3b3780" font-size="10">7</text></g>
+
+    <!-- Cell 8 (top-right corner - VIP) -->
+    <g transform="translate(678,18)">
+      <rect x="0" y="0" width="84" height="90" rx="14" fill="url(#vipGrad)" stroke="#fcd34d" stroke-width="1" filter="url(#cardShadow)"/>
+      <text x="42" y="36" text-anchor="middle" fill="#1a1a3e" font-size="24">👑</text>
+      <text x="42" y="58" text-anchor="middle" fill="#78350f" font-size="11" font-weight="bold">VIP +1</text>
+      <text x="42" y="78" text-anchor="middle" fill="#92400e" font-size="10">8</text>
+    </g>
+
+    <!-- Corner indicator: top-right -->
+    <circle cx="775" cy="70" r="5" fill="#fbbf24" opacity="0.4"/>
+
+    <!-- ===== RIGHT COLUMN: cells 9-16 ===== -->
+    <g transform="translate(678,118)"><rect x="0" y="0" width="84" height="90" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="0.5"/><text x="42" y="50" text-anchor="middle" fill="#4b4780" font-size="28">↓</text><text x="42" y="75" text-anchor="middle" fill="#3b3780" font-size="10">9</text></g>
+    <g transform="translate(678,218)"><rect x="0" y="0" width="84" height="90" rx="14" fill="url(#bombGrad)" stroke="#fca5a5" stroke-width="1"/><text x="42" y="36" text-anchor="middle" fill="#fff" font-size="24">💣</text><text x="42" y="58" text-anchor="middle" fill="#fecaca" font-size="11" font-weight="bold">炸 弹</text><text x="42" y="78" text-anchor="middle" fill="#fca5a5" font-size="10">10</text></g>
+    <g transform="translate(678,318)"><rect x="0" y="0" width="84" height="90" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="0.5"/><text x="42" y="50" text-anchor="middle" fill="#4b4780" font-size="28">↓</text><text x="42" y="75" text-anchor="middle" fill="#3b3780" font-size="10">11</text></g>
+    <g transform="translate(678,418)"><rect x="0" y="0" width="84" height="90" rx="14" fill="url(#rewardGrad)" stroke="#a5b4fc" stroke-width="1"/><text x="42" y="36" text-anchor="middle" fill="#fff" font-size="24">💴</text><text x="42" y="58" text-anchor="middle" fill="#c7d2fe" font-size="11" font-weight="bold">50 PHP</text><text x="42" y="78" text-anchor="middle" fill="#a5b4fc" font-size="10">12</text></g>
+    <g transform="translate(678,518)"><rect x="0" y="0" width="84" height="90" rx="14" fill="url(#freezeGrad)" stroke="#7dd3fc" stroke-width="1"/><text x="42" y="36" text-anchor="middle" fill="#fff" font-size="24">❄️</text><text x="42" y="58" text-anchor="middle" fill="#bae6fd" font-size="11" font-weight="bold">冰 冻</text><text x="42" y="78" text-anchor="middle" fill="#7dd3fc" font-size="10">13</text></g>
+
+    <!-- Corner indicator: bottom-right -->
+    <circle cx="775" cy="675" r="5" fill="#fbbf24" opacity="0.4"/>
+
+    <!-- ===== BOTTOM ROW: cells 14-24 ===== (right to left) -->
+    <g transform="translate(584,618)"><rect x="0" y="0" width="84" height="90" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="0.5"/><text x="42" y="50" text-anchor="middle" fill="#4b4780" font-size="28">←</text><text x="42" y="75" text-anchor="middle" fill="#3b3780" font-size="10">14</text></g>
+    <g transform="translate(490,618)"><rect x="0" y="0" width="84" height="90" rx="14" fill="url(#batteryGrad)" stroke="#d8b4fe" stroke-width="1"/><text x="42" y="36" text-anchor="middle" fill="#fff" font-size="24">🔋</text><text x="42" y="58" text-anchor="middle" fill="#ddd6fe" font-size="11" font-weight="bold">电 池+2</text><text x="42" y="78" text-anchor="middle" fill="#c4b5fd" font-size="10">15</text></g>
+    <g transform="translate(396,618)"><rect x="0" y="0" width="84" height="90" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="0.5"/><text x="42" y="50" text-anchor="middle" fill="#4b4780" font-size="28">←</text><text x="42" y="75" text-anchor="middle" fill="#3b3780" font-size="10">16</text></g>
+    <g transform="translate(302,618)"><rect x="0" y="0" width="84" height="90" rx="14" fill="url(#vipGrad)" stroke="#fcd34d" stroke-width="1"/><text x="42" y="36" text-anchor="middle" fill="#1a1a3e" font-size="24">👑</text><text x="42" y="58" text-anchor="middle" fill="#78350f" font-size="11" font-weight="bold">VIP +1</text><text x="42" y="78" text-anchor="middle" fill="#92400e" font-size="10">21</text></g>
+    <g transform="translate(208,618)"><rect x="0" y="0" width="84" height="90" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="0.5"/><text x="42" y="50" text-anchor="middle" fill="#4b4780" font-size="28">←</text><text x="42" y="75" text-anchor="middle" fill="#3b3780" font-size="10">22</text></g>
+    <g transform="translate(114,618)"><rect x="0" y="0" width="84" height="90" rx="14" fill="url(#bombGrad)" stroke="#fca5a5" stroke-width="1"/><text x="42" y="36" text-anchor="middle" fill="#fff" font-size="24">💣</text><text x="42" y="58" text-anchor="middle" fill="#fecaca" font-size="11" font-weight="bold">炸 弹</text><text x="42" y="78" text-anchor="middle" fill="#fca5a5" font-size="10">23</text></g>
+
+    <!-- Cell 24 (bottom-left corner) -->
+    <g transform="translate(20,618)">
+      <rect x="0" y="0" width="84" height="90" rx="14" fill="url(#freezeGrad)" stroke="#7dd3fc" stroke-width="1" filter="url(#cardShadow)"/>
+      <text x="42" y="36" text-anchor="middle" fill="#fff" font-size="24">❄️</text>
+      <text x="42" y="58" text-anchor="middle" fill="#bae6fd" font-size="11" font-weight="bold">冰 冻</text>
+      <text x="42" y="78" text-anchor="middle" fill="#7dd3fc" font-size="10">24</text>
+    </g>
+
+    <!-- Corner indicator: bottom-left -->
+    <circle cx="60" cy="675" r="5" fill="#fbbf24" opacity="0.4"/>
+
+    <!-- Corner indicator: top-left -->
+    <circle cx="60" cy="70" r="5" fill="#fbbf24" opacity="0.4"/>
+
+    <!-- ===== PLAYER PIECE on cell 20 ===== -->
+    <g transform="translate(322,618)">
+      <rect x="-2" y="-2" width="88" height="94" rx="16" fill="none" stroke="#fbbf24" stroke-width="3" filter="url(#glow)"/>
+    </g>
+    <text x="380" y="610" fill="#fbbf24" font-size="26" filter="url(#glow)">🚗</text>
+
+    <!-- ===== CENTER AREA ===== -->
+    <g transform="translate(130,130)">
+      <rect x="0" y="0" width="580" height="460" rx="22" fill="url(#centerGrad)" stroke="#2d2a5e" stroke-width="1"/>
+
+      <!-- Center decoration circles -->
+      <circle cx="290" cy="200" r="160" fill="none" stroke="#2d2a5e" stroke-width="0.5" stroke-dasharray="4,8"/>
+      <circle cx="290" cy="200" r="120" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.08"/>
+
+      <!-- Center text -->
+      <text x="290" y="185" text-anchor="middle" fill="#fff" font-size="30" font-weight="900">LUCKY JUMP</text>
+      <text x="290" y="215" text-anchor="middle" fill="#6b679b" font-size="13">掷骰子，环游棋盘，赢取大奖</text>
+
+      <!-- Dice display -->
+      <g transform="translate(290,240)">
+        <rect x="-50" y="0" width="100" height="70" rx="16" fill="#242050" stroke="#3b3780" stroke-width="1"/>
+        <text x="0" y="45" text-anchor="middle" fill="#fbbf24" font-size="36" font-weight="900">⚄</text>
+      </g>
+
+      <!-- Roll button -->
+      <g transform="translate(290,330)">
+        <rect x="-90" y="0" width="180" height="52" rx="26" fill="url(#btnGrad)" filter="url(#btnShadow)"/>
+        <text x="0" y="33" text-anchor="middle" fill="#fff" font-size="17" font-weight="bold">🎲 立即跳棋</text>
+      </g>
+
+      <!-- Cost hint -->
+      <text x="290" y="405" text-anchor="middle" fill="#4b4780" font-size="12">每次消耗 1 次机会</text>
+
+      <!-- Stats row -->
+      <g transform="translate(30,430)">
+        <rect x="0" y="0" width="115" height="55" rx="12" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1"/>
+        <text x="57" y="22" text-anchor="middle" fill="#7b75a3" font-size="10">剩余机会</text>
+        <text x="57" y="43" text-anchor="middle" fill="#fbbf24" font-size="18" font-weight="bold">12</text>
+      </g>
+      <g transform="translate(155,430)">
+        <rect x="0" y="0" width="115" height="55" rx="12" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1"/>
+        <text x="57" y="22" text-anchor="middle" fill="#7b75a3" font-size="10">完成圈数</text>
+        <text x="57" y="43" text-anchor="middle" fill="#34d399" font-size="18" font-weight="bold">3</text>
+      </g>
+      <g transform="translate(280,430)">
+        <rect x="0" y="0" width="115" height="55" rx="12" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1"/>
+        <text x="57" y="22" text-anchor="middle" fill="#7b75a3" font-size="10">当前格子</text>
+        <text x="57" y="43" text-anchor="middle" fill="#38bdf8" font-size="18" font-weight="bold">20</text>
+      </g>
+      <g transform="translate(405,430)">
+        <rect x="0" y="0" width="115" height="55" rx="12" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1"/>
+        <text x="57" y="22" text-anchor="middle" fill="#7b75a3" font-size="10">VIP 等级</text>
+        <text x="57" y="43" text-anchor="middle" fill="#fbbf24" font-size="18" font-weight="bold">⭐⭐</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- ===== SIDEBAR: Tasks ===== -->
+  <g transform="translate(30,90)">
+    <text x="0" y="0" fill="#a78bfa" font-size="10" font-weight="bold" letter-spacing="3">任 务 中 心</text>
+    <line x1="0" y1="10" x2="80" y2="10" stroke="url(#goldGrad)" stroke-width="2"/>
+
+    <!-- Task 1 -->
+    <g transform="translate(0,25)">
+      <rect x="0" y="0" width="100" height="130" rx="16" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+      <text x="50" y="35" text-anchor="middle" fill="#fff" font-size="28">📅</text>
+      <text x="50" y="60" text-anchor="middle" fill="#e2e0f3" font-size="12" font-weight="bold">每日签到</text>
+      <text x="50" y="80" text-anchor="middle" fill="#7b75a3" font-size="9">普通 5 次</text>
+      <text x="50" y="95" text-anchor="middle" fill="#7b75a3" font-size="9">连续7天 10 次</text>
+      <rect x="15" y="105" width="70" height="22" rx="6" fill="url(#goldGrad)"/>
+      <text x="50" y="120" text-anchor="middle" fill="#1e1b4b" font-size="10" font-weight="bold">签 到</text>
+    </g>
+
+    <!-- Task 2 -->
+    <g transform="translate(0,165)">
+      <rect x="0" y="0" width="100" height="130" rx="16" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+      <text x="50" y="35" text-anchor="middle" fill="#fff" font-size="28">💳</text>
+      <text x="50" y="60" text-anchor="middle" fill="#e2e0f3" font-size="12" font-weight="bold">充值奖励</text>
+      <text x="50" y="80" text-anchor="middle" fill="#7b75a3" font-size="9">每 10 USDT</text>
+      <text x="50" y="95" text-anchor="middle" fill="#7b75a3" font-size="9">获得 10 次</text>
+      <rect x="15" y="105" width="70" height="22" rx="6" fill="url(#goldGrad)"/>
+      <text x="50" y="120" text-anchor="middle" fill="#1e1b4b" font-size="10" font-weight="bold">充 值</text>
+    </g>
+
+    <!-- Task 3 -->
+    <g transform="translate(0,305)">
+      <rect x="0" y="0" width="100" height="130" rx="16" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+      <text x="50" y="35" text-anchor="middle" fill="#fff" font-size="28">👥</text>
+      <text x="50" y="60" text-anchor="middle" fill="#e2e0f3" font-size="12" font-weight="bold">邀请好友</text>
+      <text x="50" y="80" text-anchor="middle" fill="#7b75a3" font-size="9">每邀请 1 人</text>
+      <text x="50" y="95" text-anchor="middle" fill="#7b75a3" font-size="9">获得 5 次</text>
+      <rect x="15" y="105" width="70" height="22" rx="6" fill="url(#goldGrad)"/>
+      <text x="50" y="120" text-anchor="middle" fill="#1e1b4b" font-size="10" font-weight="bold">邀 请</text>
+    </g>
+  </g>
+
+  <!-- Right sidebar: Leaderboard -->
+  <g transform="translate(990,90)">
+    <text x="0" y="0" fill="#a78bfa" font-size="10" font-weight="bold" letter-spacing="3">排 行 榜</text>
+    <line x1="0" y1="10" x2="80" y2="10" stroke="url(#goldGrad)" stroke-width="2"/>
+
+    <g transform="translate(0,25)">
+      <rect x="0" y="0" width="100" height="280" rx="16" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+
+      <!-- Rank 1 -->
+      <g transform="translate(10,18)">
+        <rect x="0" y="0" width="80" height="44" rx="10" fill="#fbbf24" opacity="0.1"/>
+        <text x="10" y="28" fill="#fbbf24" font-size="13" font-weight="bold">🥇</text>
+        <text x="35" y="28" fill="#fff" font-size="11">王***</text>
+        <text x="75" y="28" text-anchor="end" fill="#fbbf24" font-size="9">5圈</text>
+      </g>
+
+      <!-- Rank 2 -->
+      <g transform="translate(10,68)">
+        <rect x="0" y="0" width="80" height="36" rx="8" fill="none"/>
+        <text x="10" y="24" fill="#c0c0c0" font-size="13">🥈</text>
+        <text x="35" y="24" fill="#d1d5db" font-size="11">李***</text>
+        <text x="75" y="24" text-anchor="end" fill="#d1d5db" font-size="9">4圈</text>
+      </g>
+
+      <!-- Rank 3 -->
+      <g transform="translate(10,110)">
+        <rect x="0" y="0" width="80" height="36" rx="8" fill="none"/>
+        <text x="10" y="24" fill="#d97706" font-size="13">🥉</text>
+        <text x="35" y="24" fill="#d1d5db" font-size="11">张***</text>
+        <text x="75" y="24" text-anchor="end" fill="#d1d5db" font-size="9">4圈</text>
+      </g>
+
+      <!-- Ranks 4-8 -->
+      <text x="20" y="168" fill="#7b75a3" font-size="10"> 4  刘***  <tspan fill="#9ca3af" font-size="9">3圈</tspan></text>
+      <text x="20" y="188" fill="#7b75a3" font-size="10"> 5  陈***  <tspan fill="#9ca3af" font-size="9">3圈</tspan></text>
+      <text x="20" y="208" fill="#fbbf24" font-size="10"> 6  你 ⬅  <tspan fill="#fbbf24" font-size="9">2圈</tspan></text>
+      <text x="20" y="228" fill="#7b75a3" font-size="10"> 7  赵***  <tspan fill="#9ca3af" font-size="9">2圈</tspan></text>
+      <text x="20" y="248" fill="#7b75a3" font-size="10"> 8  周***  <tspan fill="#9ca3af" font-size="9">2圈</tspan></text>
+
+      <rect x="5" y="194" width="90" height="24" rx="6" fill="#fbbf24" opacity="0.08"/>
+    </g>
+  </g>
+
+  <!-- ===== LEGEND ===== -->
+  <g transform="translate(130,855)">
+    <rect x="0" y="0" width="14" height="14" rx="3" fill="url(#startGrad)"/><text x="20" y="12" fill="#7875a3" font-size="10">起点</text>
+    <rect x="70" y="0" width="14" height="14" rx="3" fill="url(#rewardGrad)"/><text x="90" y="12" fill="#7875a3" font-size="10">奖励</text>
+    <rect x="140" y="0" width="14" height="14" rx="3" fill="url(#freezeGrad)"/><text x="160" y="12" fill="#7875a3" font-size="10">冰冻</text>
+    <rect x="210" y="0" width="14" height="14" rx="3" fill="url(#bombGrad)"/><text x="230" y="12" fill="#7875a3" font-size="10">炸弹</text>
+    <rect x="280" y="0" width="14" height="14" rx="3" fill="url(#vipGrad)"/><text x="300" y="12" fill="#7875a3" font-size="10">VIP</text>
+    <rect x="350" y="0" width="14" height="14" rx="3" fill="url(#batteryGrad)"/><text x="370" y="12" fill="#7875a3" font-size="10">电池</text>
+  </g>
+
+  <!-- Version badge -->
+  <text x="1070" y="890" text-anchor="end" fill="#3b3780" font-size="9">DESIGN v2.0 · REV A</text>
+</svg>

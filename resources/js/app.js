@@ -2,12 +2,38 @@ import './bootstrap';
 
 function uuidv4(){return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=crypto.getRandomValues(new Uint8Array(1))[0]%16|0;return(c==='x'?r:r&0x3|0x8).toString(16)})}
 
-// Copy-to-clipboard buttons
-document.querySelectorAll('[data-copy]').forEach(button => button.addEventListener('click', async () => {
-    await navigator.clipboard.writeText(button.dataset.copy);
-    const old = button.textContent; button.textContent = '已复制';
-    setTimeout(() => button.textContent = old, 1500);
-}));
+// Copy to clipboard (with HTTP fallback)
+function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+    }
+    // Fallback for HTTP pages
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    ta.style.top = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(ta);
+}
+
+document.querySelectorAll('[data-copy]').forEach(button => {
+    button.addEventListener('click', async () => {
+        await copyText(button.dataset.copy);
+        const old = button.textContent;
+        button.textContent = '已复制!';
+        button.style.background = '#4ade80';
+        button.style.color = '#000';
+        setTimeout(() => {
+            button.textContent = old;
+            button.style.background = '';
+            button.style.color = '';
+        }, 1500);
+    });
+});
 
 // Prize modal
 function showPrizeModal(cellType, cellLabel) {
@@ -24,7 +50,6 @@ function showPrizeModal(cellType, cellLabel) {
     const overlay = document.querySelector('#prizeOverlay');
     const closeBtn = document.querySelector('#prizeClose');
 
-    // Set content based on prize type
     const prizes = {
         prize:  { emoji: '💰', title: '🎊 恭喜中奖!',    detail: '奖品已记录，请联系客服领取' },
         battery:{ emoji: '🔋', title: '⚡ 获得电池!',    detail: '电池 +1，已自动发放到账户' },
@@ -37,8 +62,8 @@ function showPrizeModal(cellType, cellLabel) {
     name.textContent = cellLabel;
     detail.textContent = p.detail;
 
-    // Generate confetti
-    const colors = ['#fbbf24','#f59e0b','#ef4444','#34d399','#38bdf8','#a78bfa','#6366f1','#f87171'];
+    // Confetti
+    const colors = ['#e2a83b','#f0c060','#d4442a','#4ade80','#38bdf8','#c4b5fd','#f87171'];
     let html = '';
     for (let i = 0; i < 60; i++) {
         const x = Math.random() * 100;
@@ -49,7 +74,6 @@ function showPrizeModal(cellType, cellLabel) {
     }
     confetti.innerHTML = html;
 
-    // Close handler
     function close() {
         overlay.remove();
         location.reload();
@@ -69,7 +93,6 @@ if (moveButton) moveButton.addEventListener('click', async () => {
     eventEl.textContent = '骰子滚动中…';
     diceEl.textContent = '🎲';
 
-    // Dice rolling animation
     const faces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
     let rollCount = 0;
     const rollInterval = setInterval(() => {
@@ -100,7 +123,7 @@ if (moveButton) moveButton.addEventListener('click', async () => {
         document.querySelector('#lap').textContent = data.to_lap;
         document.querySelector('#position').textContent = data.to_position;
 
-        // Update board: clear old active, set new
+        // Update board
         document.querySelectorAll('.cell').forEach(c => {
             c.classList.remove('active');
             c.querySelector('.piece')?.remove();
@@ -109,14 +132,10 @@ if (moveButton) moveButton.addEventListener('click', async () => {
         cell?.classList.add('active');
         if (cell) cell.insertAdjacentHTML('beforeend', '<em class="piece">🚗</em>');
 
-        // Check if prize cell
+        // Prize detection
         const prizeTypes = ['prize', 'battery', 'vip'];
-        const cellType = data.cell_type;
-        const cellLabel = cell ? cell.querySelector('.cell-label')?.textContent || '' : '';
-
-        if (prizeTypes.includes(cellType)) {
-            // Show prize modal instead of auto-reload
-            setTimeout(() => showPrizeModal(cellType, data.result_text), 600);
+        if (prizeTypes.includes(data.cell_type)) {
+            setTimeout(() => showPrizeModal(data.cell_type, data.result_text), 600);
         } else {
             setTimeout(() => location.reload(), 2200);
         }

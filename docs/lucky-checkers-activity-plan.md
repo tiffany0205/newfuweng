@@ -1,7 +1,7 @@
 # 幸运跳棋大冒险活动设计方案
 
 > 版本：V1.0  
-> 技术方向：PHP + SQLite  
+> 技术方向：PHP 8.2+ + Laravel 11 + SQLite  
 > 文档用途：产品原型、UI 设计、后端开发、测试验收及活动运营
 
 ## 1. 活动概述
@@ -465,14 +465,23 @@ created_at
 
 ### 11.1 推荐技术栈
 
-- PHP 8.2 或以上。
-- Laravel 11/12；也可以使用 Symfony。
-- SQLite，开启 WAL 模式。
+- PHP 8.2 或以上，生产环境优先使用仍在安全维护周期内的稳定版本。
+- Laravel 11，项目锁定主版本，避免部署时自动升级到更高主版本。
+- SQLite，开启 WAL 模式，适合本项目低访问量和单服务器部署场景。
 - Laravel Session 或 Sanctum 实现登录鉴权。
 - Laravel Scheduler 处理活动启停、榜单冻结和库存检查。
 - Queue 处理异步派奖、通知和排行榜快照。
 - 前端可使用 Vue 3，也可以首版使用 Laravel Blade。
+- Node.js 只用于开发或部署阶段构建前端静态资源；完成 `npm run build` 后，PHP 运行环境不需要常驻 Node.js 服务。
 - Nginx + PHP-FPM 部署。
+
+版本选择说明：
+
+- PHP 8.5 是开发机器当前安装的 PHP 版本，不代表项目必须使用 PHP 8.5。
+- 项目的最低目标版本固定为 PHP 8.2，开发代码及 Composer 依赖必须兼容 PHP 8.2。
+- 不建议将 PHP 7.4 作为最低版本。PHP 7.4 以及支持它的 Laravel 8 均已停止安全维护，而本活动涉及登录、充值和奖励发放，不应使用停止维护的运行环境。
+- 如果现有服务器只支持 PHP 7.4，应优先升级服务器到 PHP 8.2，再部署本项目，而不是降低框架版本。
+- `composer.json` 应限制 PHP 为 `^8.2`、Laravel Framework 为 `^11.0`，并提交 `composer.lock`，保证开发、测试和生产环境安装相同依赖版本。
 
 ### 11.2 一次跳棋的事务流程
 

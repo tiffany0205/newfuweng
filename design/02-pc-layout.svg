@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" style="background:#0f0f23;font-family:sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a1a3e"/><stop offset="100%" stop-color="#0f0f23"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="cardShadow"><feDropShadow dx="0" dy="2" stdDeviation="6" flood-color="#000" flood-opacity="0.3"/></filter>
+  </defs>
+  <rect width="1440" height="900" fill="url(#bg)"/>
+
+  <!-- ===== TOP BAR ===== -->
+  <rect x="0" y="0" width="1440" height="60" fill="#1e1b4b" opacity="0.95"/>
+  <text x="30" y="38" fill="#fbbf24" font-size="20" font-weight="bold">🎲 幸运跳棋大冒险</text>
+  <text x="1200" y="38" fill="#a78bfa" font-size="14">admin@example.com</text>
+  <rect x="1310" y="18" width="100" height="28" rx="14" fill="#ef4444" opacity="0.2"/>
+  <text x="1360" y="37" text-anchor="middle" fill="#fca5a5" font-size="13">退出</text>
+
+  <!-- ===== MAIN LAYOUT ===== -->
+  <!-- Left: Board Area -->
+  <text x="60" y="95" fill="#fbbf24" font-size="16" font-weight="bold">🎯 游戏棋盘</text>
+
+  <!-- Stats Row -->
+  <g transform="translate(60,115)">
+    <rect x="0" y="0" width="160" height="70" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+    <text x="80" y="28" text-anchor="middle" fill="#a78bfa" font-size="12">剩余机会</text>
+    <text x="80" y="52" text-anchor="middle" fill="#fbbf24" font-size="24" font-weight="bold">12</text>
+
+    <rect x="172" y="0" width="160" height="70" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+    <text x="252" y="28" text-anchor="middle" fill="#a78bfa" font-size="12">完成圈数</text>
+    <text x="252" y="52" text-anchor="middle" fill="#34d399" font-size="24" font-weight="bold">3</text>
+
+    <rect x="344" y="0" width="160" height="70" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+    <text x="424" y="28" text-anchor="middle" fill="#a78bfa" font-size="12">当前格子</text>
+    <text x="424" y="52" text-anchor="middle" fill="#38bdf8" font-size="24" font-weight="bold">24</text>
+
+    <rect x="516" y="0" width="160" height="70" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+    <text x="596" y="28" text-anchor="middle" fill="#a78bfa" font-size="12">VIP 等级</text>
+    <text x="596" y="52" text-anchor="middle" fill="#fbbf24" font-size="24" font-weight="bold">⭐⭐</text>
+  </g>
+
+  <!-- Board placeholder -->
+  <rect x="60" y="200" width="720" height="550" rx="20" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1.5"/>
+  <text x="420" y="480" text-anchor="middle" fill="#4b4780" font-size="18">🎲 蛇形回廊棋盘</text>
+  <text x="420" y="505" text-anchor="middle" fill="#3b3780" font-size="13">36格 · 四边环绕 · 拐角转折</text>
+  <text x="420" y="530" text-anchor="middle" fill="#3b3780" font-size="12">详见 01-board-layout.svg</text>
+
+  <!-- ===== RIGHT SIDEBAR ===== -->
+  <text x="810" y="95" fill="#fbbf24" font-size="16" font-weight="bold">📋 今日任务</text>
+
+  <!-- Task cards -->
+  <g transform="translate(810,115)">
+    <rect x="0" y="0" width="570" height="80" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+    <text x="20" y="30" fill="#fff" font-size="22">📅</text>
+    <text x="60" y="32" fill="#e2e0f3" font-size="15" font-weight="bold">每日签到</text>
+    <text x="60" y="52" fill="#7b75a3" font-size="12">普通 5 次 · 连续第 7 天得 10 次</text>
+    <rect x="480" y="22" width="70" height="36" rx="10" fill="url(#gold)"/>
+    <text x="515" y="45" text-anchor="middle" fill="#1e1b4b" font-size="13" font-weight="bold">签到</text>
+
+    <rect x="0" y="90" width="570" height="80" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+    <text x="20" y="120" fill="#fff" font-size="22">💳</text>
+    <text x="60" y="122" fill="#e2e0f3" font-size="15" font-weight="bold">充值任务</text>
+    <text x="60" y="142" fill="#7b75a3" font-size="12">每充值 10 USDT 获得 10 次机会</text>
+    <rect x="480" y="112" width="70" height="36" rx="10" fill="url(#gold)"/>
+    <text x="515" y="135" text-anchor="middle" fill="#1e1b4b" font-size="13" font-weight="bold">充值</text>
+
+    <rect x="0" y="180" width="570" height="80" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+    <text x="20" y="210" fill="#fff" font-size="22">👥</text>
+    <text x="60" y="212" fill="#e2e0f3" font-size="15" font-weight="bold">邀请好友</text>
+    <text x="60" y="232" fill="#7b75a3" font-size="12">每邀请 1 位好友注册获得 5 次机会</text>
+    <rect x="480" y="202" width="70" height="36" rx="10" fill="url(#gold)"/>
+    <text x="515" y="225" text-anchor="middle" fill="#1e1b4b" font-size="13" font-weight="bold">复制</text>
+
+    <rect x="0" y="270" width="570" height="80" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+    <text x="20" y="300" fill="#fff" font-size="22">🎁</text>
+    <text x="60" y="302" fill="#e2e0f3" font-size="15" font-weight="bold">好友首充奖励</text>
+    <text x="60" y="322" fill="#7b75a3" font-size="12">好友首次充值达标获得 10 次机会</text>
+  </g>
+
+  <!-- Leaderboard -->
+  <text x="810" y="505" fill="#fbbf24" font-size="16" font-weight="bold">🏆 排行榜 TOP 20</text>
+  <g transform="translate(810,525)">
+    <rect x="0" y="0" width="570" height="215" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+    <!-- Rank items -->
+    <text x="30" y="38" fill="#fbbf24" font-size="14">🥇 1</text><text x="70" y="38" fill="#fff" font-size="14">王***</text><text x="480" y="38" fill="#fbbf24" font-size="14" text-anchor="end">5圈 32格</text>
+    <text x="30" y="68" fill="#c0c0c0" font-size="14">🥈 2</text><text x="70" y="68" fill="#d1d5db" font-size="14">李***</text><text x="480" y="68" fill="#d1d5db" font-size="14" text-anchor="end">4圈 28格</text>
+    <text x="30" y="98" fill="#d97706" font-size="14">🥉 3</text><text x="70" y="98" fill="#d1d5db" font-size="14">张***</text><text x="480" y="98" fill="#d1d5db" font-size="14" text-anchor="end">4圈 15格</text>
+    <text x="30" y="128" fill="#7b75a3" font-size="14">   4</text><text x="70" y="128" fill="#9ca3af" font-size="14">刘***</text><text x="480" y="128" fill="#9ca3af" font-size="14" text-anchor="end">3圈 30格</text>
+    <text x="30" y="158" fill="#7b75a3" font-size="14">   5</text><text x="70" y="158" fill="#7b75a3" font-size="14" font-weight="bold">你</text><text x="480" y="158" fill="#fbbf24" font-size="14" text-anchor="end">3圈 24格</text>
+    <rect x="15" y="133" width="540" height="28" rx="8" fill="#fbbf24" opacity="0.1"/>
+  </g>
+
+  <!-- Bottom: Records -->
+  <text x="60" y="790" fill="#fbbf24" font-size="16" font-weight="bold">📊 机会明细 &amp; 中奖记录</text>
+  <g transform="translate(60,810)">
+    <rect x="0" y="0" width="350" height="70" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+    <text x="175" y="28" text-anchor="middle" fill="#a78bfa" font-size="13">机会明细</text>
+    <text x="175" y="50" text-anchor="middle" fill="#7b75a3" font-size="11">查看签到、充值、邀请等记录</text>
+
+    <rect x="370" y="0" width="350" height="70" rx="14" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="1" filter="url(#cardShadow)"/>
+    <text x="545" y="28" text-anchor="middle" fill="#a78bfa" font-size="13">中奖列表</text>
+    <text x="545" y="50" text-anchor="middle" fill="#7b75a3" font-size="11">查看已中奖品及发放状态</text>
+  </g>
+</svg>

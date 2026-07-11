@@ -1,0 +1,208 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" style="background:#0f0f23;font-family:sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1a1a3e"/><stop offset="100%" stop-color="#0f0f23"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient>
+    <linearGradient id="cellStart" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#059669"/></linearGradient>
+    <linearGradient id="cellReward" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#4f46e5"/></linearGradient>
+    <linearGradient id="cellFreeze" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#0ea5e9"/></linearGradient>
+    <linearGradient id="cellBomb" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#dc2626"/></linearGradient>
+    <linearGradient id="cellVIP" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#d97706"/></linearGradient>
+    <linearGradient id="cellBattery" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient>
+    <linearGradient id="centerGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#1e1b4b"/><stop offset="100%" stop-color="#0f0f23"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.5"/></filter>
+  </defs>
+
+  <rect width="900" height="700" fill="url(#bg)"/>
+
+  <!-- Title -->
+  <text x="450" y="35" text-anchor="middle" fill="#fbbf24" font-size="18" font-weight="bold">🎲 Board Design — Perimeter Loop Layout (蛇形回廊棋盘)</text>
+
+  <!-- Board container -->
+  <g transform="translate(90,55)">
+    <rect x="0" y="0" width="720" height="600" rx="24" fill="#1e1b4b" stroke="#2d2a5e" stroke-width="2" filter="url(#shadow)"/>
+
+    <!-- Center area -->
+    <rect x="120" y="120" width="480" height="360" rx="20" fill="url(#centerGrad)" stroke="#312e6b" stroke-width="1"/>
+
+    <!-- Center content -->
+    <text x="360" y="260" text-anchor="middle" fill="#fff" font-size="28" font-weight="bold">🎲 掷出骰子，开始冒险！</text>
+    <text x="360" y="295" text-anchor="middle" fill="#a5a2cc" font-size="14">每次消耗 1 次机会</text>
+
+    <!-- Dice button -->
+    <rect x="280" y="315" width="160" height="48" rx="24" fill="url(#gold)" filter="url(#glow)"/>
+    <text x="360" y="345" text-anchor="middle" fill="#1a1a3e" font-size="18" font-weight="bold">⚄ 立即跳棋</text>
+
+    <!-- Stats in center -->
+    <g transform="translate(140,390)">
+      <rect x="0" y="0" width="105" height="60" rx="12" fill="#25224d"/>
+      <text x="52" y="25" text-anchor="middle" fill="#a78bfa" font-size="11">剩余机会</text>
+      <text x="52" y="48" text-anchor="middle" fill="#fff" font-size="22" font-weight="bold">12</text>
+    </g>
+    <g transform="translate(255,390)">
+      <rect x="0" y="0" width="105" height="60" rx="12" fill="#25224d"/>
+      <text x="52" y="25" text-anchor="middle" fill="#a78bfa" font-size="11">完成圈数</text>
+      <text x="52" y="48" text-anchor="middle" fill="#fff" font-size="22" font-weight="bold">3</text>
+    </g>
+    <g transform="translate(370,390)">
+      <rect x="0" y="0" width="105" height="60" rx="12" fill="#25224d"/>
+      <text x="52" y="25" text-anchor="middle" fill="#a78bfa" font-size="11">当前格子</text>
+      <text x="52" y="48" text-anchor="middle" fill="#fff" font-size="22" font-weight="bold">24</text>
+    </g>
+    <g transform="translate(485,390)">
+      <rect x="0" y="0" width="105" height="60" rx="12" fill="#25224d"/>
+      <text x="52" y="25" text-anchor="middle" fill="#a78bfa" font-size="11">VIP 等级</text>
+      <text x="52" y="48" text-anchor="middle" fill="#fbbf24" font-size="22" font-weight="bold">⭐⭐</text>
+    </g>
+  </g>
+
+  <!-- === TOP ROW (positions 0-8) === -->
+  <g transform="translate(20,15)">
+    <!-- Cell 0 (Start, left side of top) -->
+    <rect x="0" y="0" width="68" height="68" rx="12" fill="url(#cellStart)" stroke="#34d399" stroke-width="1.5"/>
+    <text x="34" y="28" text-anchor="middle" fill="#fff" font-size="18">🏁</text>
+    <text x="34" y="48" text-anchor="middle" fill="#d1fae5" font-size="10">起点</text>
+    <text x="34" y="60" text-anchor="middle" fill="#d1fae5" font-size="9">1</text>
+
+    <!-- Cells 1-7 (top row) -->
+    <rect x="74" y="0" width="68" height="68" rx="12" fill="#25224d" stroke="#3b3780" stroke-width="1"/>
+    <text x="108" y="28" text-anchor="middle" fill="#a78bfa" font-size="18">⬆</text>
+    <text x="108" y="48" text-anchor="middle" fill="#6763a3" font-size="10">直行</text>
+    <text x="108" y="60" text-anchor="middle" fill="#6763a3" font-size="9">2</text>
+
+    <rect x="148" y="0" width="68" height="68" rx="12" fill="#25224d" stroke="#3b3780" stroke-width="1"/>
+    <text x="182" y="28" text-anchor="middle" fill="#a78bfa" font-size="18">⬆</text>
+    <text x="182" y="48" text-anchor="middle" fill="#6763a3" font-size="10">直行</text>
+    <text x="182" y="60" text-anchor="middle" fill="#6763a3" font-size="9">3</text>
+
+    <rect x="222" y="0" width="68" height="68" rx="12" fill="url(#cellReward)" stroke="#818cf8" stroke-width="1.5"/>
+    <text x="256" y="28" text-anchor="middle" fill="#fff" font-size="18">💵</text>
+    <text x="256" y="48" text-anchor="middle" fill="#c7d2fe" font-size="10">+0.01U</text>
+    <text x="256" y="60" text-anchor="middle" fill="#c7d2fe" font-size="9">4</text>
+
+    <rect x="296" y="0" width="68" height="68" rx="12" fill="#25224d" stroke="#3b3780" stroke-width="1"/>
+    <text x="330" y="28" text-anchor="middle" fill="#a78bfa" font-size="18">⬆</text>
+    <text x="330" y="48" text-anchor="middle" fill="#6763a3" font-size="10">直行</text>
+    <text x="330" y="60" text-anchor="middle" fill="#6763a3" font-size="9">5</text>
+
+    <rect x="370" y="0" width="68" height="68" rx="12" fill="url(#cellFreeze)" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="404" y="28" text-anchor="middle" fill="#fff" font-size="18">❄️</text>
+    <text x="404" y="48" text-anchor="middle" fill="#bae6fd" font-size="10">冰冻</text>
+    <text x="404" y="60" text-anchor="middle" fill="#bae6fd" font-size="9">6</text>
+
+    <rect x="444" y="0" width="68" height="68" rx="12" fill="#25224d" stroke="#3b3780" stroke-width="1"/>
+    <text x="478" y="28" text-anchor="middle" fill="#a78bfa" font-size="18">⬆</text>
+    <text x="478" y="48" text-anchor="middle" fill="#6763a3" font-size="10">直行</text>
+    <text x="478" y="60" text-anchor="middle" fill="#6763a3" font-size="9">7</text>
+  </g>
+
+  <!-- === TOP-RIGHT CORNER === -->
+  <rect x="620" y="15" width="68" height="68" rx="12" fill="url(#cellVIP)" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="654" y="28" text-anchor="middle" fill="#1a1a3e" font-size="18">⭐</text>
+  <text x="654" y="48" text-anchor="middle" fill="#78350f" font-size="10">VIP+1</text>
+  <text x="654" y="60" text-anchor="middle" fill="#78350f" font-size="9">8</text>
+
+  <!-- === RIGHT COLUMN (positions 9-16, going DOWN) === -->
+  <rect x="620" y="89" width="68" height="68" rx="12" fill="#25224d" stroke="#3b3780" stroke-width="1"/>
+  <text x="654" y="28" text-anchor="middle" fill="#a78bfa" font-size="18">➡</text>
+  <text x="654" y="48" text-anchor="middle" fill="#6763a3" font-size="10">直行</text>
+  <text x="654" y="60" text-anchor="middle" fill="#6763a3" font-size="9">9</text>
+
+  <rect x="620" y="163" width="68" height="68" rx="12" fill="url(#cellBomb)" stroke="#f87171" stroke-width="1.5"/>
+  <text x="654" y="28" text-anchor="middle" fill="#fff" font-size="18">💣</text>
+  <text x="654" y="48" text-anchor="middle" fill="#fecaca" font-size="10">炸弹</text>
+  <text x="654" y="60" text-anchor="middle" fill="#fecaca" font-size="9">10</text>
+
+  <rect x="620" y="237" width="68" height="68" rx="12" fill="#25224d" stroke="#3b3780" stroke-width="1"/>
+  <text x="654" y="28" text-anchor="middle" fill="#a78bfa" font-size="18">➡</text>
+  <text x="654" y="48" text-anchor="middle" fill="#6763a3" font-size="10">直行</text>
+  <text x="654" y="60" text-anchor="middle" fill="#6763a3" font-size="9">11</text>
+
+  <rect x="620" y="311" width="68" height="68" rx="12" fill="url(#cellReward)" stroke="#818cf8" stroke-width="1.5"/>
+  <text x="654" y="28" text-anchor="middle" fill="#fff" font-size="18">💴</text>
+  <text x="654" y="48" text-anchor="middle" fill="#c7d2fe" font-size="10">+50P</text>
+  <text x="654" y="60" text-anchor="middle" fill="#c7d2fe" font-size="9">12</text>
+
+  <rect x="620" y="385" width="68" height="68" rx="12" fill="url(#cellFreeze)" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="654" y="28" text-anchor="middle" fill="#fff" font-size="18">❄️</text>
+  <text x="654" y="48" text-anchor="middle" fill="#bae6fd" font-size="10">冰冻</text>
+  <text x="654" y="60" text-anchor="middle" fill="#bae6fd" font-size="9">13</text>
+
+  <rect x="620" y="459" width="68" height="68" rx="12" fill="#25224d" stroke="#3b3780" stroke-width="1"/>
+  <text x="654" y="28" text-anchor="middle" fill="#a78bfa" font-size="18">➡</text>
+  <text x="654" y="48" text-anchor="middle" fill="#6763a3" font-size="10">直行</text>
+  <text x="654" y="60" text-anchor="middle" fill="#6763a3" font-size="9">14</text>
+
+  <rect x="620" y="533" width="68" height="68" rx="12" fill="url(#cellBattery)" stroke="#c4b5fd" stroke-width="1.5"/>
+  <text x="654" y="28" text-anchor="middle" fill="#fff" font-size="18">🔋</text>
+  <text x="654" y="48" text-anchor="middle" fill="#ddd6fe" font-size="10">电池+2</text>
+  <text x="654" y="60" text-anchor="middle" fill="#ddd6fe" font-size="9">15</text>
+
+  <!-- === BOTTOM-LEFT corner (turn indicator) === -->
+  <rect x="14" y="533" width="68" height="68" rx="12" fill="none" stroke="#fbbf24" stroke-width="2" stroke-dasharray="6"/>
+  <text x="48" y="28" text-anchor="middle" fill="#fbbf24" font-size="18">↩</text>
+  <text x="48" y="48" text-anchor="middle" fill="#fbbf24" font-size="10">折返</text>
+  <text x="48" y="60" text-anchor="middle" fill="#fbbf24" font-size="9">16</text>
+
+  <!-- === BOTTOM ROW (positions 16-24, going LEFT) === -->
+  <rect x="88" y="533" width="68" height="68" rx="12" fill="#25224d" stroke="#3b3780" stroke-width="1"/>
+  <text x="122" y="28" text-anchor="middle" fill="#a78bfa" font-size="18">⬅</text>
+  <text x="122" y="60" text-anchor="middle" fill="#6763a3" font-size="9">17</text>
+
+  <rect x="162" y="533" width="68" height="68" rx="12" fill="url(#cellReward)" stroke="#818cf8" stroke-width="1.5"/>
+  <text x="196" y="28" text-anchor="middle" fill="#fff" font-size="18">💶</text>
+  <text x="196" y="48" text-anchor="middle" fill="#c7d2fe" font-size="10">+10KV</text>
+  <text x="196" y="60" text-anchor="middle" fill="#c7d2fe" font-size="9">18</text>
+
+  <rect x="236" y="533" width="68" height="68" rx="12" fill="#25224d" stroke="#3b3780" stroke-width="1"/>
+  <text x="270" y="28" text-anchor="middle" fill="#a78bfa" font-size="18">⬅</text>
+  <text x="270" y="60" text-anchor="middle" fill="#6763a3" font-size="9">19</text>
+
+  <rect x="310" y="533" width="68" height="68" rx="12" fill="#25224d" stroke="#3b3780" stroke-width="1"/>
+  <text x="344" y="28" text-anchor="middle" fill="#a78bfa" font-size="18">⬅</text>
+  <text x="344" y="60" text-anchor="middle" fill="#6763a3" font-size="9">20</text>
+
+  <rect x="384" y="533" width="68" height="68" rx="12" fill="url(#cellVIP)" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="418" y="28" text-anchor="middle" fill="#1a1a3e" font-size="18">⭐</text>
+  <text x="418" y="48" text-anchor="middle" fill="#78350f" font-size="10">VIP+1</text>
+  <text x="418" y="60" text-anchor="middle" fill="#78350f" font-size="9">21</text>
+
+  <rect x="458" y="533" width="68" height="68" rx="12" fill="#25224d" stroke="#3b3780" stroke-width="1"/>
+  <text x="492" y="28" text-anchor="middle" fill="#a78bfa" font-size="18">⬅</text>
+  <text x="492" y="60" text-anchor="middle" fill="#6763a3" font-size="9">22</text>
+
+  <rect x="532" y="533" width="68" height="68" rx="12" fill="url(#cellBomb)" stroke="#f87171" stroke-width="1.5"/>
+  <text x="566" y="28" text-anchor="middle" fill="#fff" font-size="18">💣</text>
+  <text x="566" y="48" text-anchor="middle" fill="#fecaca" font-size="10">炸弹</text>
+  <text x="566" y="60" text-anchor="middle" fill="#fecaca" font-size="9">23</text>
+
+  <!-- === Player piece on active cell === -->
+  <rect x="222" y="0" width="68" height="68" rx="12" fill="none" stroke="#fbbf24" stroke-width="4" filter="url(#glow)"/>
+  <text x="270" y="10" fill="#fbbf24" font-size="22" filter="url(#glow)">🚗</text>
+
+  <!-- === Arrow indicators for movement direction === -->
+  <text x="680" y="380" fill="#fbbf24" font-size="16" opacity="0.5">↕</text>
+  <text x="680" y="50" fill="#fbbf24" font-size="16" opacity="0.5">↕</text>
+
+  <!-- === Turn corner annotations === -->
+  <!-- Top-right corner indicator -->
+  <circle cx="700" cy="49" r="6" fill="#fbbf24" opacity="0.7"/>
+  <!-- Bottom-right corner -->
+  <circle cx="700" cy="567" r="6" fill="#fbbf24" opacity="0.7"/>
+
+  <!-- Legend -->
+  <g transform="translate(20,620)">
+    <rect x="0" y="0" width="16" height="16" rx="4" fill="url(#cellStart)"/>
+    <text x="22" y="13" fill="#9ca3af" font-size="10">起点</text>
+    <rect x="60" y="0" width="16" height="16" rx="4" fill="url(#cellReward)"/>
+    <text x="82" y="13" fill="#9ca3af" font-size="10">奖励</text>
+    <rect x="120" y="0" width="16" height="16" rx="4" fill="url(#cellFreeze)"/>
+    <text x="142" y="13" fill="#9ca3af" font-size="10">冰冻</text>
+    <rect x="180" y="0" width="16" height="16" rx="4" fill="url(#cellBomb)"/>
+    <text x="202" y="13" fill="#9ca3af" font-size="10">炸弹</text>
+    <rect x="240" y="0" width="16" height="16" rx="4" fill="url(#cellVIP)"/>
+    <text x="262" y="13" fill="#9ca3af" font-size="10">VIP</text>
+    <rect x="300" y="0" width="16" height="16" rx="4" fill="url(#cellBattery)"/>
+    <text x="322" y="13" fill="#9ca3af" font-size="10">电池</text>
+  </g>
+</svg>

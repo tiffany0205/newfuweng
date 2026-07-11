@@ -63,7 +63,7 @@ function showPrizeModal(cellType, cellLabel) {
     detail.textContent = p.detail;
 
     // Confetti
-    const colors = ['#e2a83b','#f0c060','#d4442a','#4ade80','#38bdf8','#c4b5fd','#f87171'];
+    const colors = ['#c8a44e','#dab860','#c0392b','#3cb878','#4db8e8','#b8a0e0','#e86050'];
     let html = '';
     for (let i = 0; i < 60; i++) {
         const x = Math.random() * 100;

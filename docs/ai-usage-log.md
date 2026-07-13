@@ -5,7 +5,7 @@ This document records how AI contributed to the project and how its output was r
 ## Project Context
 
 - Project: 幸运跳棋大冒险（newfuweng）
-- Objective: 修复地标识别与收集问题，并统一全部掷骰结果的弹框和声音反馈。
+- Objective: 修复地标与掷骰反馈问题，并持续提升棋盘中央骰子的立体感和交互表现。
 - AI tools/models: OpenAI Codex
 - Human owner: Repository owner and product decision-maker
 
@@ -33,9 +33,20 @@ This document records how AI contributed to the project and how its output was r
 - Problems and corrections: 发现旧 FAQ 与新规则冲突，补充数据迁移和 Seeder 更新；SQLite 布尔值响应为 `0/1`，在 API 输出层显式转换为布尔值；旧弹跳缓动被界面规范检查发现后统一改为平滑减速曲线。
 - Evidence/links: `tests/Feature/LandmarkHelpTest.php`; `tests/js/game-feedback.test.js`; `docs/deployment.md`; implementation verification on 2026-07-13。
 
+### 2026-07-13 - 斜置立体骰子与待机呼吸改造
+
+- Objective: 将等待点击的中央骰子从正面平视改为明显的斜置立体效果，并让骰子本体拥有独立呼吸动效。
+- AI contribution: 诊断六面 CSS 骰子看起来像平面的原因，设计三面可见的静态姿态、独立浮动层、同步阴影、翻滚衔接、手机端幅度和减少动态效果降级；先编写失败回归测试再实现 Blade/CSS。
+- Prompt/task summary: 用户要求骰子是“斜着的立体效果”，待机时也有呼吸动效，并确认按推荐方案直接实施。
+- Resulting artifacts: 设计说明、实施计划、`dice-float-shell` 结构、六个斜置结果姿态、待机/阴影关键帧、响应式样式、`DicePresentationTest` 与操作手册更新。
+- Human review and decisions: 用户确认不需要待机持续旋转，采用正面、顶部、侧面同时可见且提示文字不跟随浮动的方案。
+- Validation and result: 测试先因缺少 `dice-float-shell` 按预期失败；实现后专项测试 1 test / 14 assertions 通过；全量 PHPUnit 25 tests / 158 assertions、Node 3 tests、Pint、Vite 生产构建和 Composer 安全审计全部通过；界面规范扫描为 0 项问题，并以 Chromium 900×900 实渲确认三面厚度、中心占比和文字稳定性。
+- Problems and corrections: 本机 PHP 升级到 8.5 后旧的 8.3 SQLite 扩展路径失效，改用与 PHP API `20250925` 匹配的现有扩展；仓库脚本名实际为 `npm run test:js`，修正计划中的通用 `npm test`；移除呼吸关键帧中的 `filter` 覆盖，确保悬浮投影和鼠标提亮能够正常生效。
+- Evidence/links: `docs/superpowers/specs/2026-07-13-angled-3d-dice-design.md`; `docs/superpowers/plans/2026-07-13-angled-3d-dice.md`; `tests/Feature/DicePresentationTest.php`。
+
 ## Outcome Summary
 
-- Main AI contributions: 根因分析、交互设计、Laravel/SQLite 实现、统一前端反馈、自动化测试、部署与操作文档。
-- Main human corrections and decisions: 明确紫色只属于正式地标；要求所有掷骰结果都有弹框和音效；确认推荐的分级反馈方案。
-- Measured outcomes: 最终验证为 PHPUnit 24 tests / 144 assertions、Node 3 tests、Vite 56 modules 构建成功，界面规范扫描 0 项问题。
+- Main AI contributions: 根因分析、交互设计、Laravel/SQLite 实现、统一前端反馈、斜置 3D 骰子、自动化测试、部署与操作文档。
+- Main human corrections and decisions: 明确紫色只属于正式地标；要求所有掷骰结果都有弹框和音效；确认分级反馈与斜置三面可见骰子方案。
+- Measured outcomes: 最终验证为 PHPUnit 25 tests / 158 assertions、Node 3 tests、Vite 56 modules 构建成功，Pint 与 Composer 审计通过，界面规范扫描 0 项问题。
 - Limitations and unresolved risks: Web Audio 受浏览器与设备音量策略影响，不支持时按设计静默降级；生产环境更新必须先执行数据库迁移和前端构建。

@@ -25,7 +25,7 @@ Add assertions that the activity Blade contains an independent `dice-float-shell
 Run:
 
 ```bash
-php -d extension=/usr/lib/php/20230831/sqlite3.so -d extension=/usr/lib/php/20230831/pdo_sqlite.so vendor/bin/phpunit --filter=DicePresentationTest
+php -d extension=/tmp/php-sqlite-ext/extracted/usr/lib/php/20250925/sqlite3.so -d extension=/tmp/php-sqlite-ext/extracted/usr/lib/php/20250925/pdo_sqlite.so vendor/bin/phpunit --filter=DicePresentationTest
 ```
 
 Expected: FAIL because `dice-float-shell` and the new motion rules do not exist yet.
@@ -84,8 +84,8 @@ Expected: no new findings.
 Run:
 
 ```bash
-php -d extension=/usr/lib/php/20230831/sqlite3.so -d extension=/usr/lib/php/20230831/pdo_sqlite.so vendor/bin/phpunit
-npm test
+php -d extension=/tmp/php-sqlite-ext/extracted/usr/lib/php/20250925/sqlite3.so -d extension=/tmp/php-sqlite-ext/extracted/usr/lib/php/20250925/pdo_sqlite.so vendor/bin/phpunit
+npm run test:js
 npm run build
 ```
 

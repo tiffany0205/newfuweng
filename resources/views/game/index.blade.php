@@ -78,13 +78,15 @@
           <div class="center-action" id="diceConsole">
             <button id="moveButton" class="dice-trigger" data-url="{{ route('game.move') }}" data-frozen="{{ $state->is_frozen ? '1' : '0' }}" aria-label="{{ $state->is_frozen ? '点击解除冰冻' : '点击骰子掷出好运' }}">
               <div class="dice-stage" id="diceStage" aria-hidden="true">
-                <div class="dice-cube face-1" id="diceCube">
-                  <span class="die-face die-face-1"><i></i></span>
-                  <span class="die-face die-face-2"><i></i><i></i></span>
-                  <span class="die-face die-face-3"><i></i><i></i><i></i></span>
-                  <span class="die-face die-face-4"><i></i><i></i><i></i><i></i></span>
-                  <span class="die-face die-face-5"><i></i><i></i><i></i><i></i><i></i></span>
-                  <span class="die-face die-face-6"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                <div class="dice-float-shell">
+                  <div class="dice-cube face-1" id="diceCube">
+                    <span class="die-face die-face-1"><i></i></span>
+                    <span class="die-face die-face-2"><i></i><i></i></span>
+                    <span class="die-face die-face-3"><i></i><i></i><i></i></span>
+                    <span class="die-face die-face-4"><i></i><i></i><i></i><i></i></span>
+                    <span class="die-face die-face-5"><i></i><i></i><i></i><i></i><i></i></span>
+                    <span class="die-face die-face-6"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                  </div>
                 </div>
                 <span class="dice-shadow"></span>
               </div>

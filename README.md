@@ -28,3 +28,4 @@ php artisan serve
 - [幸运跳棋大冒险活动设计方案](docs/lucky-checkers-activity-plan.md)
 - [部署文档](docs/deployment.md)
 - [操作手册](docs/operation-manual.md)
+- [功能说明手册](docs/features-manual.md)

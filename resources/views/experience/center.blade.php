@@ -5,7 +5,7 @@
   <section class="experience-hero">
     <div><span class="eyebrow">PLAYER JOURNEY</span><h1>幸运中心</h1><p>任务、成长、收藏和奖励都在这里</p></div>
     <div class="season-card"><span>当前章节</span><b>{{ $season[0] }}</b><div><i style="width:{{ min(100,$state->completed_laps/$season[1]*100) }}%"></i></div><small>{{ $state->completed_laps }} / {{ $season[1] }} 圈</small></div>
-    <a class="back-game" href="{{ route('game.index') }}">返回棋盘 →</a>
+    <div class="hero-actions"><a href="{{ route('help.index') }}">玩法与地标</a><a class="back-game" href="{{ route('game.index') }}">返回棋盘 →</a></div>
   </section>
 
   <nav class="center-nav">

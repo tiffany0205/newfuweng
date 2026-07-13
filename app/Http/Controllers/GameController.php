@@ -25,8 +25,9 @@ class GameController extends Controller
         $invites = DB::table('invitation_rewards')->where(['activity_id' => $activity->id, 'inviter_id' => $request->user()->id])->count();
         $skinIcon = DB::table('skin_definitions')->where('id', $request->user()->equipped_skin_id)->value('icon') ?? '🚗';
         $unreadMessages = DB::table('activity_messages')->where('user_id', $request->user()->id)->whereNull('read_at')->count();
+        $unlockedLandmarks = DB::table('user_landmarks')->where(['activity_id' => $activity->id, 'user_id' => $request->user()->id])->pluck('visit_count', 'board_cell_id');
 
-        return view('game.index', compact('activity', 'state', 'cells', 'leaderboard', 'checkedIn', 'lastCheckin', 'transactions', 'winnings', 'invites', 'skinIcon', 'unreadMessages'));
+        return view('game.index', compact('activity', 'state', 'cells', 'leaderboard', 'checkedIn', 'lastCheckin', 'transactions', 'winnings', 'invites', 'skinIcon', 'unreadMessages', 'unlockedLandmarks'));
     }
 
     public function checkin(Request $request): RedirectResponse
@@ -80,11 +81,14 @@ class GameController extends Controller
                 if ($this->consumeEffect($request->user()->id, $activity->id, 'double')) {
                     $dice *= 2;
                 }
+                if ($this->consumeEffect($request->user()->id, $activity->id, 'high_roll')) {
+                    $dice = max(4, $dice);
+                }
                 $raw = $state->current_position + $dice;
                 $lap = $state->completed_laps + intdiv($raw, 36);
                 $position = $raw % 36;
                 $cell = DB::table('board_cells')->where(['activity_id' => $activity->id, 'position' => $position])->first();
-                $text = $cell->label;
+                $text = $cell->type === 'normal' && $cell->category === 'safe' ? $cell->label.'：安全抵达，本格没有特殊事件' : $cell->label;
                 if ($cell->type === 'forward') {
                     $raw = $position + $cell->value;
                     $lap += intdiv($raw, 36);
@@ -105,11 +109,14 @@ class GameController extends Controller
                 }
                 $updates = ['completed_laps' => $lap, 'current_position' => $position, 'progress_reached_at' => now(), 'updated_at' => now()];
                 if ($cell->type === 'freeze') {
-                    if ($this->consumeEffect($request->user()->id, $activity->id, 'lucky')) {
-                        $text = '幸运卡生效，免疫本次冰冻';
+                    if ($this->consumeEffect($request->user()->id, $activity->id, 'freeze_guard') || $this->consumeEffect($request->user()->id, $activity->id, 'lucky')) {
+                        $text = '防护效果生效，免疫本次冰冻';
                     } else {
                         $updates['is_frozen'] = true;
                     }
+                }
+                if ($cell->category === 'landmark') {
+                    $text .= $this->visitLandmark($activity->id, $request->user()->id, $cell, $data['request_id']);
                 }
                 DB::table('activity_users')->where('id', $state->id)->update($updates);
                 $move = $this->saveMove($data['request_id'], $activity->id, $request->user()->id, 'move', $dice, $state->completed_laps, $state->current_position, $lap, $position, $cell->type, $text);
@@ -158,6 +165,53 @@ class GameController extends Controller
         DB::table('user_active_effects')->where('id', $active->id)->decrement('remaining_uses');
 
         return true;
+    }
+
+    private function visitLandmark(int $activityId, int $userId, object $cell, string $requestId): string
+    {
+        $record = DB::table('user_landmarks')->where(['activity_id' => $activityId, 'user_id' => $userId, 'board_cell_id' => $cell->id])->first();
+        $first = ! $record;
+        if ($first) {
+            DB::table('user_landmarks')->insert(['activity_id' => $activityId, 'user_id' => $userId, 'board_cell_id' => $cell->id, 'visit_count' => 1, 'first_unlocked_at' => now(), 'last_visited_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+        } else {
+            DB::table('user_landmarks')->where('id', $record->id)->update(['visit_count' => $record->visit_count + 1, 'last_visited_at' => now(), 'updated_at' => now()]);
+            DB::table('activity_users')->where(['activity_id' => $activityId, 'user_id' => $userId])->increment('lucky_points');
+        }
+        $effectText = '';
+        if ($cell->effect_code === 'free_roll') {
+            $this->changeChance($activityId, $userId, 1, 'landmark', 'landmark-'.$requestId, $cell->label.'免费通行');
+            $effectText = '，返还 1 次跳棋机会';
+        } elseif (in_array($cell->effect_code, ['freeze_guard', 'reroll', 'high_roll'], true)) {
+            DB::table('user_active_effects')->insert(['user_id' => $userId, 'activity_id' => $activityId, 'effect' => $cell->effect_code, 'remaining_uses' => 1, 'expires_at' => now()->addDays(7), 'created_at' => now(), 'updated_at' => now()]);
+            $effectText = match ($cell->effect_code) {
+                'freeze_guard' => '，获得一次冰冻免疫', 'reroll' => '，下一次自动重掷并取较大点数', 'high_roll' => '，下一次骰子最低 4 点'
+            };
+        } elseif (str_starts_with((string) $cell->effect_code, 'lucky_')) {
+            $points = (int) str_replace('lucky_', '', $cell->effect_code);
+            DB::table('activity_users')->where(['activity_id' => $activityId, 'user_id' => $userId])->increment('lucky_points', $points);
+            $effectText = "，获得 {$points} 点幸运值";
+        } elseif ($cell->effect_code === 'rainbow') {
+            $roll = random_int(1, 3);
+            if ($roll === 1) {
+                $this->changeChance($activityId, $userId, 1, 'landmark', 'landmark-'.$requestId, '彩虹惊喜');
+                $effectText = '，彩虹惊喜：机会 +1';
+            } elseif ($roll === 2) {
+                DB::table('users')->where('id', $userId)->increment('battery');
+                $effectText = '，彩虹惊喜：电池 +1';
+            } else {
+                DB::table('activity_users')->where(['activity_id' => $activityId, 'user_id' => $userId])->increment('lucky_points', 2);
+                $effectText = '，彩虹惊喜：幸运值 +2';
+            }
+        } elseif ($cell->effect_code === 'shield' && $first) {
+            $shield = DB::table('item_definitions')->where('code', 'shield')->first();
+            DB::table('user_items')->insertOrIgnore(['user_id' => $userId, 'item_definition_id' => $shield->id, 'quantity' => 0, 'created_at' => now(), 'updated_at' => now()]);
+            DB::table('user_items')->where(['user_id' => $userId, 'item_definition_id' => $shield->id])->increment('quantity');
+            $effectText = '，首次解锁额外获得防护盾 ×1';
+        }
+        $count = DB::table('user_landmarks')->where(['activity_id' => $activityId, 'user_id' => $userId])->count();
+        $total = DB::table('board_cells')->where(['activity_id' => $activityId, 'category' => 'landmark'])->count();
+
+        return ($first ? "，新地标印章已解锁（{$count}/{$total}）" : '，重复印章转化为幸运值 +1').$effectText;
     }
 
     private function syncUnlocks(int $activityId, int $userId, int $laps): void

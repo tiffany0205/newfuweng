@@ -35,6 +35,75 @@ document.querySelectorAll('[data-copy]').forEach(button => {
     });
 });
 
+// Board legend and contextual cell explanation (hover on PC, tap on mobile).
+const inspector = document.querySelector('#cellInspector');
+const categoryNames = { safe: '安全格', landmark: '地标格', boost: '增益格', risk: '风险格', reward: '奖励格' };
+function inspectCell(cell) {
+    if (!inspector) return;
+    const landmark = cell.dataset.category === 'landmark';
+    inspector.querySelector('.inspector-type').textContent = categoryNames[cell.dataset.category] || '棋盘格';
+    inspector.querySelector('.inspector-icon').textContent = cell.querySelector('.cell-icon')?.textContent || '◆';
+    inspector.querySelector('h3').textContent = cell.dataset.label;
+    inspector.querySelector('p').textContent = cell.dataset.description;
+    inspector.querySelector('.inspector-status').textContent = landmark
+        ? (cell.dataset.unlocked === '1' ? `已解锁 · 累计到访 ${cell.dataset.visits} 次` : '尚未解锁 · 首次到达可获得地标印章')
+        : '落地后系统会自动处理并显示结果';
+    inspector.hidden = false;
+}
+document.querySelectorAll('.cell').forEach(cell => {
+    cell.addEventListener('click', () => inspectCell(cell));
+    cell.addEventListener('mouseenter', () => { if (window.matchMedia('(hover:hover)').matches) inspectCell(cell); });
+    cell.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            inspectCell(cell);
+        }
+    });
+});
+inspector?.querySelector('.inspector-close')?.addEventListener('click', () => inspector.hidden = true);
+const legend = document.querySelector('#boardLegend');
+document.querySelector('[data-open-legend]')?.addEventListener('click', () => {
+    legend.hidden = false;
+    legend.querySelector('button')?.focus();
+});
+legend?.querySelector('button')?.addEventListener('click', () => legend.hidden = true);
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+        if (inspector) inspector.hidden = true;
+        if (legend) legend.hidden = true;
+    }
+});
+
+// Five-step first visit tutorial. Completion is persisted server-side.
+const tutorial = document.querySelector('#tutorialOverlay');
+if (tutorial) {
+    const slides = [
+        ['🎲', '欢迎来到幸运跳棋', '完成签到、任务、充值和邀请，获得跳棋机会。'],
+        ['🗺️', '掷骰前进', '每次消耗 1 次机会，服务端随机生成点数并触发落脚格效果。'],
+        ['📍', '收集地标印章', '紫色地标首次到达解锁印章，重复到达会转化为幸运值。'],
+        ['🎁', '开启成长宝箱', '完成任务、圈数和地标收集，在幸运中心领取阶段奖励。'],
+        ['🏆', '向排行榜冲刺', '排名比较圈数、当前格子和到达时间，现在开始你的旅程吧。'],
+    ];
+    let slide = 0;
+    const next = tutorial.querySelector('.tutorial-next');
+    next.addEventListener('click', async () => {
+        slide++;
+        if (slide >= slides.length) {
+            const form = tutorial.querySelector('form');
+            await fetch(form.action, { method: 'POST', headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content, 'Accept': 'application/json' } });
+            tutorial.remove();
+            return;
+        }
+        const [icon, title, text] = slides[slide];
+        tutorial.querySelector('.tutorial-icon').textContent = icon;
+        tutorial.querySelector('h2').textContent = title;
+        tutorial.querySelector('p').textContent = text;
+        tutorial.querySelector('.tutorial-step').textContent = `0${slide + 1} / 05`;
+        tutorial.querySelectorAll('.tutorial-dots i').forEach((dot, index) => dot.classList.toggle('active', index === slide));
+        if (slide === slides.length - 1) next.textContent = '开始冒险';
+    });
+}
+
 // Prize modal
 function showPrizeModal(cellType, cellLabel) {
     const template = document.querySelector('#prizeModal');
@@ -54,6 +123,7 @@ function showPrizeModal(cellType, cellLabel) {
         prize:  { emoji: '💎', title: '恭喜抽中大奖', detail: '幸运奖励已锁定，可在中奖列表查看发放进度' },
         battery:{ emoji: '🔋', title: '能量补给到账', detail: '电池奖励已实时发放至你的账户' },
         vip:    { emoji: '👑', title: '尊享等级提升', detail: 'VIP 等级已提升，新的尊享权益已生效' },
+        landmark: { emoji: '📍', title: '新地标已解锁', detail: '旅行印章已收录到地标图鉴，继续收集可开启阶段宝箱' },
     };
     const p = prizes[cellType] || { emoji: '🎉', title: '🎊 恭喜!', detail: '' };
 
@@ -151,8 +221,9 @@ if (moveButton) moveButton.addEventListener('click', async () => {
 
         // Prize detection
         const prizeTypes = ['prize', 'battery', 'vip'];
-        if (prizeTypes.includes(data.cell_type)) {
-            setTimeout(() => showPrizeModal(data.cell_type, data.result_text), 600);
+        const unlockedLandmark = data.result_text.includes('新地标印章已解锁');
+        if (prizeTypes.includes(data.cell_type) || unlockedLandmark) {
+            setTimeout(() => showPrizeModal(unlockedLandmark ? 'landmark' : data.cell_type, data.result_text), 600);
         } else {
             setTimeout(() => location.reload(), 2200);
         }

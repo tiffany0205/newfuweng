@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ExperienceController;
 use App\Http\Controllers\GameController;
+use App\Http\Controllers\HelpController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/activity');
@@ -25,6 +26,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/activity/skins/{skin}/equip', [ExperienceController::class, 'equipSkin'])->name('experience.skins.equip');
     Route::post('/activity/winnings/{winning}/claim', [ExperienceController::class, 'submitClaim'])->name('experience.winnings.claim');
     Route::post('/activity/messages/read', [ExperienceController::class, 'readMessages'])->name('experience.messages.read');
+    Route::get('/activity/help', [HelpController::class, 'index'])->name('help.index');
+    Route::post('/activity/help/tutorial', [HelpController::class, 'completeTutorial'])->name('help.tutorial');
+    Route::post('/activity/help/landmarks/{reward}/claim', [HelpController::class, 'claimLandmarkReward'])->name('help.landmarks.claim');
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
     Route::post('/admin/recharge', [AdminController::class, 'recharge'])->name('admin.recharge');
     Route::post('/admin/winnings/{winning}/issue', [AdminController::class, 'issue'])->name('admin.winnings.issue');

@@ -23,7 +23,7 @@
     </div>
 
     <div class="board-wrapper">
-      <div class="board-caption"><span>FORTUNE CIRCUIT</span><span>36 STEPS · LIVE SEASON</span></div>
+      <div class="board-caption"><span>FORTUNE CIRCUIT</span><button type="button" data-open-legend>格子图例 ?</button><span>36 STEPS · LIVE SEASON</span></div>
       <div class="board" id="board">
         @foreach($cells as $cell)
           @php
@@ -43,11 +43,19 @@
             }
           @endphp
           <div
-            class="cell type-{{ $cell->type }} {{ $state->current_position === $cell->position ? 'active' : '' }}"
+            class="cell type-{{ $cell->type }} category-{{ $cell->category }} {{ $state->current_position === $cell->position ? 'active' : '' }}"
             data-position="{{ $cell->position }}"
             data-type="{{ $cell->type }}"
+            data-category="{{ $cell->category }}"
+            data-label="{{ $cell->label }}"
+            data-description="{{ $cell->description ?: ($cell->category==='safe'?'安全格：本格不会触发奖励或负面事件。':'落地后立即触发对应效果。') }}"
+            data-unlocked="{{ $unlockedLandmarks->has($cell->id) ? '1' : '0' }}"
+            data-visits="{{ $unlockedLandmarks->get($cell->id,0) }}"
             style="grid-row:{{ $row }};grid-column:{{ $col }}"
             title="第{{ $cell->position + 1 }}步 {{ $cell->label }}"
+            role="button"
+            tabindex="0"
+            aria-label="第{{ $cell->position + 1 }}格，{{ $cell->label }}，点击查看效果"
           >
             <span class="cell-pos">{{ $cell->position + 1 }}</span>
             <span class="cell-arrow {{ $dir }}">{{ $arrow }}</span>
@@ -151,6 +159,13 @@
     </table></div>
   </details>
 </section>
+
+<div class="cell-inspector" id="cellInspector" hidden><button type="button" class="inspector-close">×</button><span class="inspector-type"></span><div class="inspector-main"><b class="inspector-icon"></b><div><h3></h3><p></p></div></div><div class="inspector-status"></div><a href="{{ route('help.index') }}#landmarks">查看完整玩法与地标图鉴 →</a></div>
+<div class="legend-popover" id="boardLegend" role="dialog" aria-modal="true" aria-labelledby="legendTitle" hidden><div><b id="legendTitle">棋盘图例</b><button type="button" aria-label="关闭棋盘图例">×</button></div><ul><li><i class="legend-safe"></i><span>安全格</span><small>平稳通行，无事件</small></li><li><i class="legend-landmark"></i><span>地标格</span><small>收集印章与轻量增益</small></li><li><i class="legend-boost"></i><span>增益格</span><small>前进或额外机会</small></li><li><i class="legend-risk"></i><span>风险格</span><small>炸弹、后退或冰冻</small></li><li><i class="legend-reward"></i><span>奖励格</span><small>奖品、VIP 或电池</small></li></ul><a href="{{ route('help.index') }}">打开玩法说明与 FAQ</a></div>
+
+@if(!$state->tutorial_seen_at)
+<div class="tutorial-overlay" id="tutorialOverlay"><div class="tutorial-card"><span class="tutorial-step">01 / 05</span><div class="tutorial-icon">🎲</div><h2>欢迎来到幸运跳棋</h2><p>完成签到、任务、充值和邀请，获得跳棋机会。</p><div class="tutorial-dots"><i class="active"></i><i></i><i></i><i></i><i></i></div><div class="tutorial-actions"><form method="post" action="{{ route('help.tutorial') }}">@csrf<button class="tutorial-skip">跳过</button></form><button type="button" class="tutorial-next">下一步</button></div></div></div>
+@endif
 
 {{-- Prize Modal Template --}}
 <template id="prizeModal">

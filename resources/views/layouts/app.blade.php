@@ -14,6 +14,7 @@
     <nav>
       <span class="user-tag">{{ auth()->user()->name }}</span>
       <a class="admin-link" href="{{ route('experience.center') }}">✦ 幸运中心</a>
+      <a class="admin-link" href="{{ route('help.index') }}">? 玩法</a>
       @if(auth()->user()->is_admin)
         <a class="admin-link" href="{{ route('admin.index') }}">⚙ 管理</a>
       @endif

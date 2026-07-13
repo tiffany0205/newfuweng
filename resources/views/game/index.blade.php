@@ -154,25 +154,35 @@
       <thead><tr><th>时间</th><th>来源</th><th>变化</th><th>余额</th></tr></thead>
       <tbody>
         @forelse($transactions as $row)
-          <tr><td>{{ $row->created_at }}</td><td>{{ $row->remark }}</td><td class="{{ $row->amount > 0 ? 'plus' : 'minus' }}">{{ $row->amount > 0 ? '+' : '' }}{{ $row->amount }}</td><td>{{ $row->balance_after }}</td></tr>
+          <tr class="chance-record-row" data-record-id="{{ $row->id }}"><td>{{ $row->created_at }}</td><td>{{ $row->remark }}</td><td class="{{ $row->amount > 0 ? 'plus' : 'minus' }}">{{ $row->amount > 0 ? '+' : '' }}{{ $row->amount }}</td><td>{{ $row->balance_after }}</td></tr>
         @empty
           <tr><td colspan="4">暂无记录</td></tr>
         @endforelse
       </tbody>
     </table></div>
+    @if($transactions->isNotEmpty())
+      <div class="record-loader" data-record-type="chance" data-url="{{ route('game.records.chances') }}" data-cursor="{{ $transactionCursor }}" data-has-more="{{ $hasMoreTransactions ? '1' : '0' }}" aria-live="polite">
+        <button type="button" @disabled(!$hasMoreTransactions)>{{ $hasMoreTransactions ? '加载更多' : '已加载全部' }}</button>
+      </div>
+    @endif
   </details>
-  <details>
+  <details open>
     <summary>中奖列表</summary>
     <div class="table-wrap"><table>
       <thead><tr><th>时间</th><th>奖品</th><th>状态</th></tr></thead>
       <tbody>
         @forelse($winnings as $row)
-          <tr><td>{{ $row->created_at }}</td><td>{{ $row->prize_name }}</td><td>{{ $row->status === 'issued' ? '已发放' : '待发放' }}</td></tr>
+          <tr class="winning-record-row" data-record-id="{{ $row->id }}"><td>{{ $row->created_at }}</td><td>{{ $row->prize_name }}</td><td>{{ $row->status === 'issued' ? '已发放' : '待发放' }}</td></tr>
         @empty
           <tr><td colspan="3">暂无中奖记录</td></tr>
         @endforelse
       </tbody>
     </table></div>
+    @if($winnings->isNotEmpty())
+      <div class="record-loader" data-record-type="winning" data-url="{{ route('game.records.winnings') }}" data-cursor="{{ $winningCursor }}" data-has-more="{{ $hasMoreWinnings ? '1' : '0' }}" aria-live="polite">
+        <button type="button" @disabled(!$hasMoreWinnings)>{{ $hasMoreWinnings ? '加载更多' : '已加载全部' }}</button>
+      </div>
+    @endif
   </details>
 </section>
 

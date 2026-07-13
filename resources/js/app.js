@@ -35,6 +35,100 @@ document.querySelectorAll('[data-copy]').forEach(button => {
     });
 });
 
+// Independently cursor-paginate the two activity record tables.
+document.querySelectorAll('.record-loader').forEach(loader => {
+    const details = loader.closest('details');
+    const tbody = details?.querySelector('tbody');
+    const button = loader.querySelector('button');
+    if (!tbody || !button) return;
+
+    const seen = new Set([...tbody.querySelectorAll('[data-record-id]')].map(row => row.dataset.recordId));
+    let cursor = loader.dataset.cursor || null;
+    let hasMore = loader.dataset.hasMore === '1';
+    let loading = false;
+    let observer = null;
+
+    function addCell(row, value, className = '') {
+        const cell = document.createElement('td');
+        cell.textContent = value ?? '—';
+        if (className) cell.className = className;
+        row.appendChild(cell);
+    }
+
+    function appendRecord(record) {
+        const id = String(record.id);
+        if (seen.has(id)) return;
+
+        const row = document.createElement('tr');
+        row.dataset.recordId = id;
+        if (loader.dataset.recordType === 'chance') {
+            row.className = 'chance-record-row';
+            addCell(row, record.created_at);
+            addCell(row, record.remark);
+            const amount = Number(record.amount);
+            addCell(row, `${amount > 0 ? '+' : ''}${amount}`, amount > 0 ? 'plus' : 'minus');
+            addCell(row, record.balance_after);
+        } else {
+            row.className = 'winning-record-row';
+            addCell(row, record.created_at);
+            addCell(row, record.prize_name);
+            addCell(row, record.status_label);
+        }
+        tbody.appendChild(row);
+        seen.add(id);
+    }
+
+    function setComplete() {
+        hasMore = false;
+        loader.dataset.hasMore = '0';
+        button.textContent = '已加载全部';
+        button.disabled = true;
+        observer?.disconnect();
+    }
+
+    async function loadNextPage() {
+        if (loading || !hasMore || !cursor) return;
+        loading = true;
+        button.disabled = true;
+        button.textContent = '加载中…';
+
+        try {
+            const url = new URL(loader.dataset.url, window.location.origin);
+            url.searchParams.set('cursor', cursor);
+            const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.message || '加载失败');
+
+            payload.data.forEach(appendRecord);
+            cursor = payload.next_cursor ? String(payload.next_cursor) : null;
+            loader.dataset.cursor = cursor || '';
+            hasMore = payload.has_more === true;
+            loader.dataset.hasMore = hasMore ? '1' : '0';
+            if (hasMore && cursor) {
+                button.textContent = '加载更多';
+                button.disabled = false;
+            } else {
+                setComplete();
+            }
+        } catch (_) {
+            button.textContent = '加载失败，点击重试';
+            button.disabled = false;
+        } finally {
+            loading = false;
+        }
+    }
+
+    button.addEventListener('click', loadNextPage);
+    if (!hasMore || !cursor) {
+        setComplete();
+    } else if ('IntersectionObserver' in window) {
+        observer = new IntersectionObserver(entries => {
+            if (entries.some(entry => entry.isIntersecting)) loadNextPage();
+        }, { rootMargin: '180px 0px' });
+        observer.observe(loader);
+    }
+});
+
 // Board legend and contextual cell explanation (hover on PC, tap on mobile).
 const inspector = document.querySelector('#cellInspector');
 const categoryNames = { safe: '安全格', landmark: '地标格', boost: '增益格', risk: '风险格', reward: '奖励格' };

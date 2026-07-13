@@ -19,6 +19,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/activity', [GameController::class, 'index'])->name('game.index');
     Route::post('/activity/checkin', [GameController::class, 'checkin'])->name('game.checkin');
     Route::post('/activity/move', [GameController::class, 'move'])->name('game.move');
+    Route::get('/activity/records/chances', [GameController::class, 'chanceRecords'])->name('game.records.chances');
+    Route::get('/activity/records/winnings', [GameController::class, 'winningRecords'])->name('game.records.winnings');
     Route::get('/activity/center', [ExperienceController::class, 'center'])->name('experience.center');
     Route::post('/activity/tasks/{task}/claim', [ExperienceController::class, 'claimTask'])->name('experience.tasks.claim');
     Route::post('/activity/milestones/{milestone}/claim', [ExperienceController::class, 'claimMilestone'])->name('experience.milestones.claim');

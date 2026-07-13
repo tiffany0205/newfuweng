@@ -20,14 +20,57 @@ class GameController extends Controller
         $today = now($activity->timezone)->toDateString();
         $checkedIn = DB::table('checkins')->where(['activity_id' => $activity->id, 'user_id' => $request->user()->id, 'checkin_date' => $today])->exists();
         $lastCheckin = DB::table('checkins')->where(['activity_id' => $activity->id, 'user_id' => $request->user()->id])->latest('checkin_date')->first();
-        $transactions = DB::table('chance_transactions')->where(['activity_id' => $activity->id, 'user_id' => $request->user()->id])->latest()->limit(20)->get();
-        $winnings = DB::table('winning_records')->where(['activity_id' => $activity->id, 'user_id' => $request->user()->id])->latest()->limit(20)->get();
+        $transactionPage = $this->recordPage('chance_transactions', $activity->id, $request->user()->id);
+        $winningPage = $this->recordPage('winning_records', $activity->id, $request->user()->id);
+        $transactions = $transactionPage['data'];
+        $winnings = $winningPage['data'];
+        $transactionCursor = $transactionPage['next_cursor'];
+        $winningCursor = $winningPage['next_cursor'];
+        $hasMoreTransactions = $transactionPage['has_more'];
+        $hasMoreWinnings = $winningPage['has_more'];
         $invites = DB::table('invitation_rewards')->where(['activity_id' => $activity->id, 'inviter_id' => $request->user()->id])->count();
         $skinIcon = DB::table('skin_definitions')->where('id', $request->user()->equipped_skin_id)->value('icon') ?? '🚗';
         $unreadMessages = DB::table('activity_messages')->where('user_id', $request->user()->id)->whereNull('read_at')->count();
         $unlockedLandmarks = DB::table('user_landmarks')->where(['activity_id' => $activity->id, 'user_id' => $request->user()->id])->pluck('visit_count', 'board_cell_id');
 
-        return view('game.index', compact('activity', 'state', 'cells', 'leaderboard', 'checkedIn', 'lastCheckin', 'transactions', 'winnings', 'invites', 'skinIcon', 'unreadMessages', 'unlockedLandmarks'));
+        return view('game.index', compact('activity', 'state', 'cells', 'leaderboard', 'checkedIn', 'lastCheckin', 'transactions', 'winnings', 'transactionCursor', 'winningCursor', 'hasMoreTransactions', 'hasMoreWinnings', 'invites', 'skinIcon', 'unreadMessages', 'unlockedLandmarks'));
+    }
+
+    public function chanceRecords(Request $request): JsonResponse
+    {
+        $data = $request->validate(['cursor' => ['required', 'integer', 'min:1']]);
+        $activity = $this->activity();
+        $page = $this->recordPage('chance_transactions', $activity->id, $request->user()->id, (int) $data['cursor']);
+
+        return response()->json([
+            'data' => $page['data']->map(fn ($row) => [
+                'id' => (int) $row->id,
+                'created_at' => $row->created_at,
+                'remark' => $row->remark ?? '—',
+                'amount' => (int) $row->amount,
+                'balance_after' => (int) $row->balance_after,
+            ])->values(),
+            'next_cursor' => $page['next_cursor'],
+            'has_more' => $page['has_more'],
+        ]);
+    }
+
+    public function winningRecords(Request $request): JsonResponse
+    {
+        $data = $request->validate(['cursor' => ['required', 'integer', 'min:1']]);
+        $activity = $this->activity();
+        $page = $this->recordPage('winning_records', $activity->id, $request->user()->id, (int) $data['cursor']);
+
+        return response()->json([
+            'data' => $page['data']->map(fn ($row) => [
+                'id' => (int) $row->id,
+                'created_at' => $row->created_at,
+                'prize_name' => $row->prize_name,
+                'status_label' => $row->status === 'issued' ? '已发放' : '待发放',
+            ])->values(),
+            'next_cursor' => $page['next_cursor'],
+            'has_more' => $page['has_more'],
+        ]);
     }
 
     public function checkin(Request $request): RedirectResponse
@@ -253,5 +296,26 @@ class GameController extends Controller
     private function leaderboard(int $activityId)
     {
         return DB::table('activity_users')->join('users', 'users.id', '=', 'activity_users.user_id')->where('activity_id', $activityId)->where('ranking_status', 'eligible')->orderByDesc('completed_laps')->orderByDesc('current_position')->orderBy('progress_reached_at')->select('users.name', 'users.id as user_id', 'completed_laps', 'current_position')->limit(20)->get();
+    }
+
+    private function recordPage(string $table, int $activityId, int $userId, ?int $cursor = null): array
+    {
+        $query = DB::table($table)
+            ->where(['activity_id' => $activityId, 'user_id' => $userId])
+            ->orderByDesc('id');
+
+        if ($cursor !== null) {
+            $query->where('id', '<', $cursor);
+        }
+
+        $rows = $query->limit(11)->get();
+        $hasMore = $rows->count() > 10;
+        $data = $rows->take(10)->values();
+
+        return [
+            'data' => $data,
+            'next_cursor' => $hasMore ? (int) $data->last()->id : null,
+            'has_more' => $hasMore,
+        ];
     }
 }

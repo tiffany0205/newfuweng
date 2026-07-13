@@ -87,9 +87,85 @@ class ActivityFlowTest extends TestCase
             ->assertSee('每人 100 USDT');
     }
 
+    public function test_records_are_open_and_initially_render_ten_rows_each(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        $activityId = DB::table('activities')->value('id');
+        $this->insertRecordFixtures($activityId, $user->id, 12, 'initial');
+
+        $response = $this->actingAs($user)->get('/activity')->assertOk();
+        $html = $response->getContent();
+
+        $this->assertStringContainsString("<details open>\n    <summary>机会明细", $html);
+        $this->assertStringContainsString("<details open>\n    <summary>中奖列表", $html);
+        $this->assertSame(10, substr_count($html, 'class="chance-record-row"'));
+        $this->assertSame(10, substr_count($html, 'class="winning-record-row"'));
+    }
+
+    public function test_records_endpoints_return_independent_cursor_pages_for_current_user(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        $other = User::where('email', 'admin@example.com')->firstOrFail();
+        $activityId = DB::table('activities')->value('id');
+        $this->insertRecordFixtures($activityId, $user->id, 25, 'owner');
+        $this->insertRecordFixtures($activityId, $other->id, 1, 'other-user-secret');
+
+        $chanceIds = DB::table('chance_transactions')->where(['activity_id' => $activityId, 'user_id' => $user->id])->orderByDesc('id')->pluck('id')->all();
+        $winningIds = DB::table('winning_records')->where(['activity_id' => $activityId, 'user_id' => $user->id])->orderByDesc('id')->pluck('id')->all();
+
+        $chanceResponse = $this->actingAs($user)->getJson(route('game.records.chances', ['cursor' => $chanceIds[9]]))
+            ->assertOk()
+            ->assertJsonCount(10, 'data')
+            ->assertJsonPath('has_more', true)
+            ->assertJsonPath('next_cursor', $chanceIds[19]);
+        $this->assertSame(array_slice($chanceIds, 10, 10), array_column($chanceResponse->json('data'), 'id'));
+        $this->assertStringNotContainsString('other-user-secret', $chanceResponse->getContent());
+
+        $winningResponse = $this->actingAs($user)->getJson(route('game.records.winnings', ['cursor' => $winningIds[9]]))
+            ->assertOk()
+            ->assertJsonCount(10, 'data')
+            ->assertJsonPath('has_more', true)
+            ->assertJsonPath('next_cursor', $winningIds[19]);
+        $this->assertSame(array_slice($winningIds, 10, 10), array_column($winningResponse->json('data'), 'id'));
+        $this->assertStringNotContainsString('other-user-secret', $winningResponse->getContent());
+    }
+
+    public function test_records_endpoints_reject_invalid_cursors(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+
+        $this->actingAs($user)->getJson('/activity/records/chances?cursor=0')->assertUnprocessable();
+        $this->actingAs($user)->getJson('/activity/records/winnings?cursor=0')->assertUnprocessable();
+    }
+
     public function test_only_admin_can_open_admin_page(): void
     {
         $this->actingAs(User::where('email', 'demo@example.com')->firstOrFail())->get('/admin')->assertForbidden();
         $this->actingAs(User::where('email', 'admin@example.com')->firstOrFail())->get('/admin')->assertOk()->assertSee('活动运营控制台');
+    }
+
+    private function insertRecordFixtures(int $activityId, int $userId, int $count, string $prefix): void
+    {
+        for ($index = 1; $index <= $count; $index++) {
+            DB::table('chance_transactions')->insert([
+                'activity_id' => $activityId,
+                'user_id' => $userId,
+                'type' => 'test',
+                'amount' => $index,
+                'balance_after' => 100 + $index,
+                'business_key' => "records-{$prefix}-{$userId}-{$index}",
+                'remark' => "{$prefix}-chance-{$index}",
+                'created_at' => now()->addSeconds($index),
+                'updated_at' => now()->addSeconds($index),
+            ]);
+            DB::table('winning_records')->insert([
+                'activity_id' => $activityId,
+                'user_id' => $userId,
+                'prize_name' => "{$prefix}-prize-{$index}",
+                'status' => $index % 2 === 0 ? 'issued' : 'pending',
+                'created_at' => now()->addSeconds($index),
+                'updated_at' => now()->addSeconds($index),
+            ]);
+        }
     }
 }

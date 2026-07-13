@@ -38,11 +38,23 @@ class ActivityFlowTest extends TestCase
     {
         $user = User::where('email', 'demo@example.com')->firstOrFail();
         $requestId = (string) Str::uuid();
-        $before = DB::table('activity_users')->where('user_id', $user->id)->value('chance_balance');
         $this->actingAs($user)->postJson('/activity/move', ['request_id' => $requestId])->assertOk()->assertJsonStructure(['dice_value', 'to_position', 'result_text']);
         $this->actingAs($user)->postJson('/activity/move', ['request_id' => $requestId])->assertOk();
-        $this->assertSame($before - 1, DB::table('activity_users')->where('user_id', $user->id)->value('chance_balance'));
+        $this->assertSame(-1, DB::table('chance_transactions')->where('business_key', 'move-'.$requestId)->value('amount'));
+        $this->assertSame(1, DB::table('chance_transactions')->where('business_key', 'move-'.$requestId)->count());
         $this->assertSame(1, DB::table('board_moves')->where('request_id', $requestId)->count());
+    }
+
+    public function test_activity_renders_premium_dice_stage_and_result_feedback(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+
+        $this->actingAs($user)->get('/activity')
+            ->assertOk()
+            ->assertSee('dice-stage', false)
+            ->assertSee('dice-cube', false)
+            ->assertSee('rollResultValue', false)
+            ->assertSee('current-position-aura', false);
     }
 
     public function test_only_admin_can_open_admin_page(): void

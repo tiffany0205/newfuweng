@@ -62,6 +62,7 @@
             <i class="cell-icon">{{ $cell->icon }}</i>
             <small class="cell-label">{{ $cell->label }}</small>
             @if($state->current_position === $cell->position)
+              <span class="current-position-aura" aria-hidden="true"></span>
               <em class="piece">{{ $skinIcon }}</em>
             @endif
           </div>
@@ -70,15 +71,33 @@
         <div class="board-center">
           <div class="center-orbit orbit-one"></div><div class="center-orbit orbit-two"></div>
           <div class="center-copy"><span class="season-label">SEASON 01</span><div class="game-title">LUCKY<br><i>JUMP</i></div><p>ROLL · MOVE · WIN</p></div>
-          <div class="command-card">
-            <div class="event" id="event">
-              {{ $state->is_frozen ? '🧊 已被冰冻，需要一次机会解冻' : '准备好开启下一步好运了吗？' }}
+          <div class="command-card" id="diceConsole">
+            <div class="command-top"><span>幸运骰台</span><em><i></i> 服务端随机</em></div>
+            <div class="roll-console">
+              <div class="dice-stage" id="diceStage" aria-hidden="true">
+                <div class="dice-cube face-1" id="diceCube">
+                  <span class="die-face die-face-1"><i></i></span>
+                  <span class="die-face die-face-2"><i></i><i></i></span>
+                  <span class="die-face die-face-3"><i></i><i></i><i></i></span>
+                  <span class="die-face die-face-4"><i></i><i></i><i></i><i></i></span>
+                  <span class="die-face die-face-5"><i></i><i></i><i></i><i></i><i></i></span>
+                  <span class="die-face die-face-6"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                </div>
+                <span class="dice-shadow"></span>
+              </div>
+              <div class="roll-result" id="rollResult" aria-live="polite">
+                <span>{{ $state->is_frozen ? '当前状态' : '等待投掷' }}</span>
+                <div><b id="rollResultValue">—</b><small id="rollResultUnit">点</small></div>
+              </div>
             </div>
-            <button id="moveButton" class="dice-btn" data-url="{{ route('game.move') }}">
-              <span class="dice-icon" id="dice">✦</span>
-              <strong>{{ $state->is_frozen ? '立即解冻' : '掷出好运' }}</strong>
+            <div class="event" id="event">
+              {{ $state->is_frozen ? '🧊 已被冰冻，需要一次机会解冻' : '好运正在前方，准备出发' }}
+            </div>
+            <button id="moveButton" class="dice-btn" data-url="{{ route('game.move') }}" data-frozen="{{ $state->is_frozen ? '1' : '0' }}">
+              <span class="button-mark">✦</span>
+              <span><strong>{{ $state->is_frozen ? '立即解冻' : '掷出好运' }}</strong><small>{{ $state->is_frozen ? '消耗 1 次机会' : '点击翻转幸运骰子' }}</small></span>
+              <span class="button-arrow">→</span>
             </button>
-            <span class="hint">消耗 1 次机会 · 服务端随机</span>
           </div>
           <div class="center-rewards"><span>本轮惊喜</span><b>👑 VIP +1</b><b>💎 USDT</b><b>🔋 能量电池</b></div>
         </div>

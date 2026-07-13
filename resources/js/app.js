@@ -176,16 +176,22 @@ if (moveButton) moveButton.addEventListener('click', async () => {
     moveButton.disabled = true;
 
     const eventEl = document.querySelector('#event');
-    const diceEl = document.querySelector('#dice');
-    eventEl.textContent = '骰子滚动中…';
-    diceEl.textContent = '🎲';
+    const diceConsole = document.querySelector('#diceConsole');
+    const diceCube = document.querySelector('#diceCube');
+    const rollResult = document.querySelector('#rollResult');
+    const resultValue = document.querySelector('#rollResultValue');
+    const resultUnit = document.querySelector('#rollResultUnit');
+    const resultLabel = rollResult?.querySelector(':scope > span');
+    const shouldRoll = moveButton.dataset.frozen !== '1';
+    const rollStartedAt = performance.now();
+    const faceClasses = ['face-1', 'face-2', 'face-3', 'face-4', 'face-5', 'face-6'];
 
-    const faces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
-    let rollCount = 0;
-    const rollInterval = setInterval(() => {
-        diceEl.textContent = faces[Math.floor(Math.random() * 6)];
-        rollCount++;
-    }, 80);
+    eventEl.textContent = shouldRoll ? '骰子翻滚中，好运正在生成…' : '正在解除冰冻状态…';
+    rollResult?.classList.remove('is-result');
+    if (resultLabel) resultLabel.textContent = shouldRoll ? '骰子翻滚中' : '正在解冻';
+    if (resultValue) resultValue.textContent = '—';
+    if (resultUnit) resultUnit.textContent = shouldRoll ? '点' : '';
+    if (shouldRoll) diceConsole?.classList.add('is-rolling');
 
     try {
         const response = await fetch(moveButton.dataset.url, {
@@ -200,8 +206,19 @@ if (moveButton) moveButton.addEventListener('click', async () => {
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || '操作失败');
 
-        clearInterval(rollInterval);
-        if (data.dice_value) diceEl.textContent = data.dice_value <= 6 ? faces[data.dice_value - 1] : `×${data.dice_value}`;
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const remainingRollTime = shouldRoll && !reducedMotion ? Math.max(0, 820 - (performance.now() - rollStartedAt)) : 0;
+        if (remainingRollTime) await new Promise(resolve => setTimeout(resolve, remainingRollTime));
+
+        diceConsole?.classList.remove('is-rolling');
+        if (data.dice_value && diceCube) {
+            diceCube.classList.remove(...faceClasses);
+            diceCube.classList.add(`face-${Math.min(6, data.dice_value)}`);
+        }
+        if (resultLabel) resultLabel.textContent = data.dice_value ? '本次掷出' : '解冻完成';
+        if (resultValue) resultValue.textContent = data.dice_value || '✓';
+        if (resultUnit) resultUnit.textContent = data.dice_value ? '点' : '';
+        rollResult?.classList.add('is-result');
 
         eventEl.textContent = data.result_text;
 
@@ -213,11 +230,15 @@ if (moveButton) moveButton.addEventListener('click', async () => {
         // Update board
         document.querySelectorAll('.cell').forEach(c => {
             c.classList.remove('active');
+            c.classList.remove('just-arrived');
             c.querySelector('.piece')?.remove();
+            c.querySelector('.current-position-aura')?.remove();
         });
         const cell = document.querySelector(`[data-position="${data.to_position}"]`);
         cell?.classList.add('active');
-        if (cell) cell.insertAdjacentHTML('beforeend', `<em class="piece">${window.gameConfig.skin || '🚗'}</em>`);
+        cell?.classList.add('just-arrived');
+        if (cell) cell.insertAdjacentHTML('beforeend', `<span class="current-position-aura" aria-hidden="true"></span><em class="piece">${window.gameConfig.skin || '🚗'}</em>`);
+        setTimeout(() => cell?.classList.remove('just-arrived'), 500);
 
         // Prize detection
         const prizeTypes = ['prize', 'battery', 'vip'];
@@ -228,7 +249,10 @@ if (moveButton) moveButton.addEventListener('click', async () => {
             setTimeout(() => location.reload(), 2200);
         }
     } catch (error) {
-        clearInterval(rollInterval);
+        diceConsole?.classList.remove('is-rolling');
+        if (resultLabel) resultLabel.textContent = '操作未完成';
+        if (resultValue) resultValue.textContent = '—';
+        if (resultUnit) resultUnit.textContent = '';
         eventEl.textContent = error.message;
         moveButton.disabled = false;
     }

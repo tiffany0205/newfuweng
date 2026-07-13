@@ -54,7 +54,7 @@
             <i class="cell-icon">{{ $cell->icon }}</i>
             <small class="cell-label">{{ $cell->label }}</small>
             @if($state->current_position === $cell->position)
-              <em class="piece">🚗</em>
+              <em class="piece">{{ $skinIcon }}</em>
             @endif
           </div>
         @endforeach
@@ -79,6 +79,7 @@
   </section>
 
   <aside class="side-panel">
+    <a class="center-launcher" href="{{ route('experience.center') }}"><div><span>NEW EXPERIENCE</span><b>进入幸运中心</b><small>任务 · 宝箱 · 道具 · 成就 · 领奖</small></div><em>✦</em>@if($unreadMessages)<i>{{ $unreadMessages }}</i>@endif</a>
     <div class="panel">
       <h2>今日任务</h2>
       <div class="task">
@@ -170,5 +171,5 @@
 @endsection
 
 @push('scripts')
-<script>window.gameConfig={position:{{ $state->current_position }},chance:{{ $state->chance_balance }}};</script>
+<script>window.gameConfig={position:{{ $state->current_position }},chance:{{ $state->chance_balance }},skin:@json($skinIcon)};</script>
 @endpush

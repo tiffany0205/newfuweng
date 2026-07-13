@@ -131,7 +131,7 @@ if (moveButton) moveButton.addEventListener('click', async () => {
         if (!response.ok) throw new Error(data.message || '操作失败');
 
         clearInterval(rollInterval);
-        if (data.dice_value) diceEl.textContent = faces[data.dice_value - 1];
+        if (data.dice_value) diceEl.textContent = data.dice_value <= 6 ? faces[data.dice_value - 1] : `×${data.dice_value}`;
 
         eventEl.textContent = data.result_text;
 
@@ -147,7 +147,7 @@ if (moveButton) moveButton.addEventListener('click', async () => {
         });
         const cell = document.querySelector(`[data-position="${data.to_position}"]`);
         cell?.classList.add('active');
-        if (cell) cell.insertAdjacentHTML('beforeend', '<em class="piece">🚗</em>');
+        if (cell) cell.insertAdjacentHTML('beforeend', `<em class="piece">${window.gameConfig.skin || '🚗'}</em>`);
 
         // Prize detection
         const prizeTypes = ['prize', 'battery', 'vip'];

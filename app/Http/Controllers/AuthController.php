@@ -48,12 +48,19 @@ class AuthController extends Controller
                 'name' => $data['name'], 'email' => $data['email'], 'password' => $data['password'],
                 'invite_code' => strtoupper(Str::random(8)), 'invited_by' => $inviter?->id,
             ]);
+            $defaultSkin = DB::table('skin_definitions')->where('unlock_type', 'default')->first();
+            if ($defaultSkin) {
+                DB::table('user_skins')->insert(['user_id' => $user->id, 'skin_definition_id' => $defaultSkin->id, 'unlocked_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+                DB::table('users')->where('id', $user->id)->update(['equipped_skin_id' => $defaultSkin->id]);
+            }
+            DB::table('activity_messages')->insert(['user_id' => $user->id, 'type' => 'welcome', 'title' => '欢迎加入幸运旅程', 'content' => '完成签到和任务获得机会，圈数宝箱与成就奖励等你解锁。', 'action_url' => '/activity/center', 'created_at' => now(), 'updated_at' => now()]);
             $activity = DB::table('activities')->where('enabled', true)->first();
             if ($activity) {
                 DB::table('activity_users')->insert(['activity_id' => $activity->id, 'user_id' => $user->id, 'chance_balance' => 0, 'progress_reached_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
                 if ($inviter) {
                     DB::table('invitation_rewards')->insert(['activity_id' => $activity->id, 'inviter_id' => $inviter->id, 'invitee_id' => $user->id, 'register_awarded' => true, 'created_at' => now(), 'updated_at' => now()]);
                     $this->changeChance($activity->id, $inviter->id, 5, 'invite_register', "invite-register-{$user->id}", '邀请好友注册');
+                    DB::table('activity_messages')->insert(['user_id' => $inviter->id, 'type' => 'invite', 'title' => '好友注册成功', 'content' => $user->name.' 已通过你的邀请加入，5 次机会已到账。', 'action_url' => '/activity/center#invites', 'created_at' => now(), 'updated_at' => now()]);
                 }
             }
 

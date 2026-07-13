@@ -1,0 +1,54 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Tests\TestCase;
+
+class ExperienceCenterTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed();
+    }
+
+    public function test_user_can_open_full_experience_center(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        $this->actingAs($user)->get('/activity/center')->assertOk()->assertSee('任务中心')->assertSee('圈数宝箱')->assertSee('邀请好友中心')->assertSee('奖池与领奖中心');
+    }
+
+    public function test_completed_checkin_task_can_only_be_claimed_once(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        $this->actingAs($user)->post('/activity/checkin');
+        $task = DB::table('task_definitions')->where('code', 'daily_checkin')->first();
+        $before = DB::table('activity_users')->where('user_id', $user->id)->value('chance_balance');
+        $this->actingAs($user)->post("/activity/tasks/{$task->id}/claim")->assertSessionHas('success');
+        $this->assertSame($before + 2, DB::table('activity_users')->where('user_id', $user->id)->value('chance_balance'));
+        $this->actingAs($user)->post("/activity/tasks/{$task->id}/claim")->assertStatus(422);
+    }
+
+    public function test_milestone_reward_and_item_usage_change_real_state(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        DB::table('activity_users')->where('user_id', $user->id)->update(['completed_laps' => 3, 'is_frozen' => true]);
+        $milestone = DB::table('milestone_definitions')->where('required_laps', 3)->first();
+        $this->actingAs($user)->post("/activity/milestones/{$milestone->id}/claim")->assertSessionHas('success');
+        $item = DB::table('item_definitions')->where('code', 'unfreeze')->first();
+        DB::table('user_items')->insert(['user_id' => $user->id, 'item_definition_id' => $item->id, 'quantity' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        $this->actingAs($user)->post("/activity/items/{$item->id}/use")->assertSessionHas('success');
+        $this->assertFalse((bool) DB::table('activity_users')->where('user_id', $user->id)->value('is_frozen'));
+    }
+
+    public function test_non_admin_cannot_use_operations_console(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        $this->actingAs($user)->post('/admin/chances', ['user_id' => $user->id, 'amount' => 10, 'reason' => 'test'])->assertForbidden();
+    }
+}

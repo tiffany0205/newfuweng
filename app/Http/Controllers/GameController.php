@@ -23,8 +23,10 @@ class GameController extends Controller
         $transactions = DB::table('chance_transactions')->where(['activity_id' => $activity->id, 'user_id' => $request->user()->id])->latest()->limit(20)->get();
         $winnings = DB::table('winning_records')->where(['activity_id' => $activity->id, 'user_id' => $request->user()->id])->latest()->limit(20)->get();
         $invites = DB::table('invitation_rewards')->where(['activity_id' => $activity->id, 'inviter_id' => $request->user()->id])->count();
+        $skinIcon = DB::table('skin_definitions')->where('id', $request->user()->equipped_skin_id)->value('icon') ?? '🚗';
+        $unreadMessages = DB::table('activity_messages')->where('user_id', $request->user()->id)->whereNull('read_at')->count();
 
-        return view('game.index', compact('activity', 'state', 'cells', 'leaderboard', 'checkedIn', 'lastCheckin', 'transactions', 'winnings', 'invites'));
+        return view('game.index', compact('activity', 'state', 'cells', 'leaderboard', 'checkedIn', 'lastCheckin', 'transactions', 'winnings', 'invites', 'skinIcon', 'unreadMessages'));
     }
 
     public function checkin(Request $request): RedirectResponse
@@ -57,6 +59,9 @@ class GameController extends Controller
         }
 
         try {
+            if ($activity->status !== 'active' || now()->lt($activity->starts_at) || now()->gt($activity->ends_at)) {
+                throw new \RuntimeException('活动当前不在可走棋时间内');
+            }
             $result = DB::transaction(function () use ($activity, $request, $data) {
                 $state = DB::table('activity_users')->where(['activity_id' => $activity->id, 'user_id' => $request->user()->id])->first();
                 if (! $state || $state->chance_balance < 1) {
@@ -69,6 +74,12 @@ class GameController extends Controller
                     return $this->saveMove($data['request_id'], $activity->id, $request->user()->id, 'unfreeze', null, $state->completed_laps, $state->current_position, $state->completed_laps, $state->current_position, 'unfreeze', '解冻成功，下次可以继续前进');
                 }
                 $dice = random_int(1, 6);
+                if ($this->consumeEffect($request->user()->id, $activity->id, 'reroll')) {
+                    $dice = max($dice, random_int(1, 6));
+                }
+                if ($this->consumeEffect($request->user()->id, $activity->id, 'double')) {
+                    $dice *= 2;
+                }
                 $raw = $state->current_position + $dice;
                 $lap = $state->completed_laps + intdiv($raw, 36);
                 $position = $raw % 36;
@@ -85,16 +96,25 @@ class GameController extends Controller
                     $text .= "，后退 {$cell->value} 格";
                 }
                 if ($cell->type === 'bomb') {
-                    $position = 0;
-                    $text = '踩中炸弹，回到本圈起点';
+                    if ($this->consumeEffect($request->user()->id, $activity->id, 'shield') || $this->consumeEffect($request->user()->id, $activity->id, 'lucky')) {
+                        $text = '防护道具生效，成功抵挡炸弹';
+                    } else {
+                        $position = 0;
+                        $text = '踩中炸弹，回到本圈起点';
+                    }
                 }
                 $updates = ['completed_laps' => $lap, 'current_position' => $position, 'progress_reached_at' => now(), 'updated_at' => now()];
                 if ($cell->type === 'freeze') {
-                    $updates['is_frozen'] = true;
+                    if ($this->consumeEffect($request->user()->id, $activity->id, 'lucky')) {
+                        $text = '幸运卡生效，免疫本次冰冻';
+                    } else {
+                        $updates['is_frozen'] = true;
+                    }
                 }
                 DB::table('activity_users')->where('id', $state->id)->update($updates);
                 $move = $this->saveMove($data['request_id'], $activity->id, $request->user()->id, 'move', $dice, $state->completed_laps, $state->current_position, $lap, $position, $cell->type, $text);
                 $this->awardCell($activity->id, $request->user(), $cell, $move->id);
+                $this->syncUnlocks($activity->id, $request->user()->id, $lap);
 
                 return $move;
             });
@@ -126,6 +146,30 @@ class GameController extends Controller
     private function winning(int $activityId, int $userId, int $moveId, string $name, string $status): void
     {
         DB::table('winning_records')->insert(['activity_id' => $activityId, 'user_id' => $userId, 'board_move_id' => $moveId, 'prize_name' => $name, 'status' => $status, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('activity_messages')->insert(['user_id' => $userId, 'type' => 'winning', 'title' => '恭喜获得 '.$name, 'content' => $status === 'issued' ? '奖励已自动到账。' : '请前往幸运中心提交领奖资料。', 'action_url' => '/activity/center#prizes', 'created_at' => now(), 'updated_at' => now()]);
+    }
+
+    private function consumeEffect(int $userId, int $activityId, string $effect): bool
+    {
+        $active = DB::table('user_active_effects')->where(['user_id' => $userId, 'activity_id' => $activityId, 'effect' => $effect])->where('remaining_uses', '>', 0)->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()))->first();
+        if (! $active) {
+            return false;
+        }
+        DB::table('user_active_effects')->where('id', $active->id)->decrement('remaining_uses');
+
+        return true;
+    }
+
+    private function syncUnlocks(int $activityId, int $userId, int $laps): void
+    {
+        $skins = DB::table('skin_definitions')->where('unlock_type', 'laps')->where('unlock_value', '<=', $laps)->get();
+        foreach ($skins as $skin) {
+            DB::table('user_skins')->insertOrIgnore(['user_id' => $userId, 'skin_definition_id' => $skin->id, 'unlocked_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+        }
+        $achievements = DB::table('achievement_definitions')->where('metric', 'laps')->where('target', '<=', $laps)->get();
+        foreach ($achievements as $achievement) {
+            DB::table('user_achievements')->insertOrIgnore(['user_id' => $userId, 'achievement_definition_id' => $achievement->id, 'unlocked_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+        }
     }
 
     private function saveMove(string $id, int $activityId, int $userId, string $action, ?int $dice, int $fromLap, int $fromPos, int $toLap, int $toPos, string $type, string $text): object

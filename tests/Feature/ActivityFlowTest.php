@@ -48,6 +48,6 @@ class ActivityFlowTest extends TestCase
     public function test_only_admin_can_open_admin_page(): void
     {
         $this->actingAs(User::where('email', 'demo@example.com')->firstOrFail())->get('/admin')->assertForbidden();
-        $this->actingAs(User::where('email', 'admin@example.com')->firstOrFail())->get('/admin')->assertOk()->assertSee('人工充值记账');
+        $this->actingAs(User::where('email', 'admin@example.com')->firstOrFail())->get('/admin')->assertOk()->assertSee('活动运营控制台');
     }
 }

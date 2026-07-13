@@ -23,7 +23,7 @@
     </div>
 
     <div class="board-wrapper">
-      <div class="board-caption"><span>FORTUNE CIRCUIT</span><button type="button" data-open-legend>格子图例 ?</button><span>36 STEPS · LIVE SEASON</span></div>
+      <div class="board-caption"><span>FORTUNE CIRCUIT</span><div class="board-caption-actions"><button type="button" data-open-legend>格子图例 ?</button><button type="button" id="soundToggle" aria-pressed="false" aria-label="关闭掷骰音效"><span>🔊</span><small>音效开</small></button></div><span>36 STEPS · LIVE SEASON</span></div>
       <div class="board board-square" id="board">
         @foreach($cells as $cell)
           @php
@@ -61,6 +61,9 @@
             <span class="cell-arrow {{ $dir }}">{{ $arrow }}</span>
             <i class="cell-icon">{{ $cell->icon }}</i>
             <small class="cell-label">{{ $cell->label }}</small>
+            @if($cell->category === 'landmark')
+              <span class="landmark-badge">地标</span>
+            @endif
             @if($state->current_position === $cell->position)
               <span class="current-position-aura" aria-hidden="true"></span>
               <em class="piece">{{ $skinIcon }}</em>
@@ -193,18 +196,19 @@
 <div class="tutorial-overlay" id="tutorialOverlay"><div class="tutorial-card"><span class="tutorial-step">01 / 05</span><div class="tutorial-icon">🎲</div><h2>欢迎来到幸运跳棋</h2><p>完成签到、任务、充值和邀请，获得跳棋机会。</p><div class="tutorial-dots"><i class="active"></i><i></i><i></i><i></i><i></i></div><div class="tutorial-actions"><form method="post" action="{{ route('help.tutorial') }}">@csrf<button class="tutorial-skip">跳过</button></form><button type="button" class="tutorial-next">下一步</button></div></div></div>
 @endif
 
-{{-- Prize Modal Template --}}
-<template id="prizeModal">
-  <div class="modal-overlay" id="prizeOverlay">
+{{-- Unified roll feedback modal --}}
+<template id="rollFeedbackModal">
+  <div class="modal-overlay roll-feedback-overlay" id="rollFeedbackOverlay" role="dialog" aria-modal="true" aria-labelledby="prizeTitle">
     <div class="modal-confetti" id="confetti"></div>
-    <div class="modal-card">
+    <div class="modal-card roll-feedback-card">
       <div class="prize-rays"></div><div class="prize-halo"></div>
-      <span class="prize-kicker">LUCKY MOMENT</span>
+      <span class="prize-kicker" id="feedbackKicker">本次结果</span>
       <span class="prize-emoji" id="prizeEmoji">🎉</span>
-      <div class="prize-title" id="prizeTitle">恭喜中奖</div>
+      <div class="prize-title" id="prizeTitle">本次结果</div>
       <div class="prize-name" id="prizeName"></div>
       <div class="prize-detail" id="prizeDetail"></div>
-      <button class="prize-btn" id="prizeClose">开心收下</button>
+      <p class="feedback-result" id="feedbackResult"></p>
+      <button type="button" class="prize-btn" id="prizeClose">继续前进</button>
     </div>
   </div>
 </template>

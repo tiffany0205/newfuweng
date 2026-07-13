@@ -1,4 +1,5 @@
 import './bootstrap';
+import { feedbackPresentation, playFeedbackSound } from './game-feedback';
 
 function uuidv4(){return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=crypto.getRandomValues(new Uint8Array(1))[0]%16|0;return(c==='x'?r:r&0x3|0x8).toString(16)})}
 
@@ -198,69 +199,89 @@ if (tutorial) {
     });
 }
 
-// Prize modal
-function showPrizeModal(cellType, cellLabel) {
-    const template = document.querySelector('#prizeModal');
+const soundStorageKey = 'gameSoundMuted';
+
+function isSoundMuted() {
+    try { return localStorage.getItem(soundStorageKey) === '1'; } catch (_) { return false; }
+}
+
+function setSoundMuted(muted) {
+    try { localStorage.setItem(soundStorageKey, muted ? '1' : '0'); } catch (_) {}
+}
+
+const soundToggle = document.querySelector('#soundToggle');
+function renderSoundToggle() {
+    if (!soundToggle) return;
+    const muted = isSoundMuted();
+    soundToggle.setAttribute('aria-pressed', muted ? 'true' : 'false');
+    soundToggle.setAttribute('aria-label', muted ? '开启掷骰音效' : '关闭掷骰音效');
+    soundToggle.querySelector('span').textContent = muted ? '🔇' : '🔊';
+    soundToggle.querySelector('small').textContent = muted ? '音效关' : '音效开';
+}
+soundToggle?.addEventListener('click', () => {
+    setSoundMuted(!isSoundMuted());
+    renderSoundToggle();
+});
+renderSoundToggle();
+
+// Unified feedback for every successful move
+function showRollFeedback(data) {
+    const template = document.querySelector('#rollFeedbackModal');
     if (!template) return;
+    document.querySelector('#rollFeedbackOverlay')?.remove();
     const clone = template.content.cloneNode(true);
     document.body.appendChild(clone);
 
+    const presentation = feedbackPresentation(data);
     const emoji = document.querySelector('#prizeEmoji');
+    const kicker = document.querySelector('#feedbackKicker');
     const title = document.querySelector('#prizeTitle');
     const name = document.querySelector('#prizeName');
     const detail = document.querySelector('#prizeDetail');
+    const result = document.querySelector('#feedbackResult');
     const confetti = document.querySelector('#confetti');
-    const overlay = document.querySelector('#prizeOverlay');
+    const overlay = document.querySelector('#rollFeedbackOverlay');
     const closeBtn = document.querySelector('#prizeClose');
 
-    const prizes = {
-        prize:  { emoji: '💎', title: '恭喜抽中大奖', detail: '幸运奖励已锁定，可在中奖列表查看发放进度' },
-        battery:{ emoji: '🔋', title: '能量补给到账', detail: '电池奖励已实时发放至你的账户' },
-        vip:    { emoji: '👑', title: '尊享等级提升', detail: 'VIP 等级已提升，新的尊享权益已生效' },
-        landmark: { emoji: '📍', title: '新地标已解锁', detail: '旅行印章已收录到地标图鉴，继续收集可开启阶段宝箱' },
-    };
-    const p = prizes[cellType] || { emoji: '🎉', title: '🎊 恭喜!', detail: '' };
+    overlay.classList.add(`feedback-${data.feedback_type || 'normal'}`);
+    if (presentation.celebrate) overlay.classList.add('is-celebration');
+    emoji.textContent = presentation.emoji;
+    kicker.textContent = presentation.kicker;
+    title.textContent = presentation.title;
+    name.textContent = data.dice_value ? `掷出 ${data.dice_value} 点 · ${data.final_cell_label}` : data.final_cell_label;
+    detail.textContent = presentation.detail;
+    result.textContent = data.result_text;
+    closeBtn.textContent = presentation.celebrate ? '开心收下' : '继续前进';
 
-    emoji.textContent = p.emoji;
-    title.textContent = p.title;
-    name.textContent = cellLabel;
-    detail.textContent = p.detail;
-
-    // A short, dependency-free celebration chime. Silently ignored when audio is blocked.
-    try {
-        const audio = new (window.AudioContext || window.webkitAudioContext)();
-        [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => {
-            const oscillator = audio.createOscillator();
-            const gain = audio.createGain();
-            oscillator.type = 'sine';
-            oscillator.frequency.value = frequency;
-            gain.gain.setValueAtTime(0, audio.currentTime + index * .09);
-            gain.gain.linearRampToValueAtTime(.07, audio.currentTime + index * .09 + .02);
-            gain.gain.exponentialRampToValueAtTime(.001, audio.currentTime + index * .09 + .35);
-            oscillator.connect(gain).connect(audio.destination);
-            oscillator.start(audio.currentTime + index * .09);
-            oscillator.stop(audio.currentTime + index * .09 + .38);
-        });
-    } catch (_) {}
-
-    // Confetti
-    const colors = ['#f2d692','#d6b36a','#6c8cff','#63d9e6','#65d49c','#ffffff'];
-    let html = '';
-    for (let i = 0; i < 60; i++) {
-        const x = Math.random() * 100;
-        const delay = Math.random() * 1.5;
-        const size = 6 + Math.random() * 10;
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        html += `<span class="confetti-piece" style="left:${x}%;width:${size}px;height:${size*1.6}px;background:${color};animation-delay:${delay}s;animation-duration:${2+Math.random()*2}s"></span>`;
+    if (presentation.celebrate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const colors = ['#f2d692','#d6b36a','#6c8cff','#63d9e6','#65d49c','#ffffff'];
+        let html = '';
+        for (let i = 0; i < 42; i++) {
+            const x = Math.random() * 100;
+            const delay = Math.random() * .7;
+            const size = 5 + Math.random() * 7;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            html += `<span class="confetti-piece" style="left:${x}%;width:${size}px;height:${size*1.5}px;background:${color};animation-delay:${delay}s;animation-duration:${1.6+Math.random()}s"></span>`;
+        }
+        confetti.innerHTML = html;
     }
-    confetti.innerHTML = html;
 
+    let closed = false;
+    function handleKeydown(event) {
+        if (event.key === 'Escape') close();
+    }
     function close() {
-        overlay.remove();
-        location.reload();
+        if (closed) return;
+        closed = true;
+        document.removeEventListener('keydown', handleKeydown);
+        overlay.classList.add('is-closing');
+        setTimeout(() => location.reload(), 160);
     }
     closeBtn.addEventListener('click', close);
     overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+    document.addEventListener('keydown', handleKeydown);
+    closeBtn.focus();
+    if (presentation.autoCloseMs) setTimeout(close, presentation.autoCloseMs);
 }
 
 // Dice / move button
@@ -339,14 +360,10 @@ if (moveButton) moveButton.addEventListener('click', async () => {
         if (cell) cell.insertAdjacentHTML('beforeend', `<span class="current-position-aura" aria-hidden="true"></span><em class="piece">${window.gameConfig.skin || '🚗'}</em>`);
         setTimeout(() => cell?.classList.remove('just-arrived'), 500);
 
-        // Prize detection
-        const prizeTypes = ['prize', 'battery', 'vip'];
-        const unlockedLandmark = data.result_text.includes('新地标印章已解锁');
-        if (prizeTypes.includes(data.cell_type) || unlockedLandmark) {
-            setTimeout(() => showPrizeModal(unlockedLandmark ? 'landmark' : data.cell_type, data.result_text), 600);
-        } else {
-            setTimeout(() => location.reload(), 2200);
-        }
+        setTimeout(() => {
+            playFeedbackSound(data.feedback_type, data.cell_type, isSoundMuted(), window);
+            showRollFeedback(data);
+        }, reducedMotion ? 80 : 420);
     } catch (error) {
         diceConsole?.classList.remove('is-rolling');
         if (resultLabel) resultLabel.textContent = '操作未完成';

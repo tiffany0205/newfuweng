@@ -22,9 +22,20 @@ This document records how AI contributed to the project and how its output was r
 - Problems and corrections: 初次通过 `artisan test` 执行时子进程没有加载 SQLite 驱动，改为显式加载扩展并直接运行 `vendor/bin/phpunit`。
 - Evidence/links: commit `50fc7b5`; `resources/css/app.css`; `app/Http/Controllers/GameController.php`; `tests/Feature/LandmarkHelpTest.php`。
 
+### 2026-07-13 - 地标结算与全量结果反馈实现
+
+- Objective: 让正式地标拥有唯一紫色标识，修复位移后地标不计进度，并让全部走棋结果都有弹框和声音反馈。
+- AI contribution: 以回归测试驱动修改 Laravel 结算，新增幂等反馈字段迁移、统一前端反馈模块、Web Audio 音调、静音控制、响应式/减少动态效果样式和部署说明。
+- Prompt/task summary: 按用户确认的推荐方案实现普通、增益、地标、奖励和风险五类统一反馈，并直接提交 `main`。
+- Resulting artifacts: `GameController` 最终落点结算；`2026_07_13_000400_add_feedback_to_board_moves.php`；`resources/js/game-feedback.js`；棋盘地标角标、统一弹框、音效开关；PHP 与 Node 回归测试；用户和部署文档。
+- Human review and decisions: 用户明确批准分级弹框/音调方案，要求不修改地标名称，并要求所有成功掷骰都使用同一反馈机制。
+- Validation and result: PHPUnit 24 tests / 144 assertions 通过；Node 3 tests 通过；Vite 生产构建通过；PHP 语法检查通过；界面反模式检查返回空列表；实际 SQLite 迁移成功并确认 12 个地标、3 个奖励类电池格。
+- Problems and corrections: 发现旧 FAQ 与新规则冲突，补充数据迁移和 Seeder 更新；SQLite 布尔值响应为 `0/1`，在 API 输出层显式转换为布尔值；旧弹跳缓动被界面规范检查发现后统一改为平滑减速曲线。
+- Evidence/links: `tests/Feature/LandmarkHelpTest.php`; `tests/js/game-feedback.test.js`; `docs/deployment.md`; implementation verification on 2026-07-13。
+
 ## Outcome Summary
 
-- Main AI contributions: 根因分析、交互设计、实施与测试计划。
+- Main AI contributions: 根因分析、交互设计、Laravel/SQLite 实现、统一前端反馈、自动化测试、部署与操作文档。
 - Main human corrections and decisions: 明确紫色只属于正式地标；要求所有掷骰结果都有弹框和音效；确认推荐的分级反馈方案。
-- Measured outcomes: 当前诊断测试 4 tests / 14 assertions 通过。
-- Limitations and unresolved risks: 实施和最终验证尚未完成；浏览器对 Web Audio 的支持差异需要静默降级。
+- Measured outcomes: 最终验证为 PHPUnit 24 tests / 144 assertions、Node 3 tests、Vite 56 modules 构建成功，界面规范扫描 0 项问题。
+- Limitations and unresolved risks: Web Audio 受浏览器与设备音量策略影响，不支持时按设计静默降级；生产环境更新必须先执行数据库迁移和前端构建。

@@ -129,8 +129,9 @@
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" id="leaderboard">
       <h2>🏆 实时排行榜 TOP 20</h2>
+      <x-ranking-rewards variant="compact" />
       <ol class="rank-list">
         @forelse($leaderboard as $rank => $item)
           <li class="{{ $item->user_id === auth()->id() ? 'me' : '' }}">

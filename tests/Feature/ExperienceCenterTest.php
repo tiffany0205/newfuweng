@@ -23,6 +23,23 @@ class ExperienceCenterTest extends TestCase
         $this->actingAs($user)->get('/activity/center')->assertOk()->assertSee('任务中心')->assertSee('圈数宝箱')->assertSee('邀请好友中心')->assertSee('奖池与领奖中心');
     }
 
+    public function test_experience_center_renders_full_ranking_rewards(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+
+        $this->actingAs($user)->get('/activity/center')
+            ->assertOk()
+            ->assertSee('ranking-reward-showcase full', false)
+            ->assertSee('iPhone 16 Pro')
+            ->assertSee('500 USDT')
+            ->assertSee('400 USDT')
+            ->assertSee('300 USDT')
+            ->assertSee('200 USDT')
+            ->assertSee('第 6～10 名')
+            ->assertSee('每人 100 USDT')
+            ->assertSee('最终总进度榜');
+    }
+
     public function test_completed_checkin_task_can_only_be_claimed_once(): void
     {
         $user = User::where('email', 'demo@example.com')->firstOrFail();

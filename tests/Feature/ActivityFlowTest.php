@@ -71,6 +71,22 @@ class ActivityFlowTest extends TestCase
             ->assertDontSee('class="command-card"', false);
     }
 
+    public function test_activity_renders_compact_ranking_rewards(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+
+        $this->actingAs($user)->get('/activity')
+            ->assertOk()
+            ->assertSee('ranking-reward-showcase compact', false)
+            ->assertSee('iPhone 16 Pro')
+            ->assertSee('500 USDT')
+            ->assertSee('400 USDT')
+            ->assertSee('300 USDT')
+            ->assertSee('200 USDT')
+            ->assertSee('第 6～10 名')
+            ->assertSee('每人 100 USDT');
+    }
+
     public function test_only_admin_can_open_admin_page(): void
     {
         $this->actingAs(User::where('email', 'demo@example.com')->firstOrFail())->get('/admin')->assertForbidden();

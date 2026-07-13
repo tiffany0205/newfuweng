@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 360" role="img" aria-labelledby="title desc">
+  <title id="title">钛金属色旗舰手机奖品图</title>
+  <desc id="desc">一部正面手机和一部背面三摄手机组成的透明背景产品构图</desc>
+  <defs>
+    <linearGradient id="titanium" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f0ede8"/>
+      <stop offset=".22" stop-color="#918d86"/>
+      <stop offset=".5" stop-color="#d8d3ca"/>
+      <stop offset=".78" stop-color="#6f6c68"/>
+      <stop offset="1" stop-color="#e8e3db"/>
+    </linearGradient>
+    <linearGradient id="back" x1=".1" y1="0" x2=".9" y2="1">
+      <stop offset="0" stop-color="#bbb6ae"/>
+      <stop offset=".55" stop-color="#8f8a83"/>
+      <stop offset="1" stop-color="#67635f"/>
+    </linearGradient>
+    <radialGradient id="screenGlow" cx="35%" cy="24%" r="85%">
+      <stop offset="0" stop-color="#526fc9"/>
+      <stop offset=".3" stop-color="#1f315f"/>
+      <stop offset=".72" stop-color="#101a34"/>
+      <stop offset="1" stop-color="#050913"/>
+    </radialGradient>
+    <radialGradient id="lens" cx="35%" cy="30%" r="70%">
+      <stop offset="0" stop-color="#5578ba"/>
+      <stop offset=".3" stop-color="#18243f"/>
+      <stop offset=".75" stop-color="#070a11"/>
+      <stop offset="1" stop-color="#1d212a"/>
+    </radialGradient>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="182" cy="320" rx="122" ry="15" fill="#030712" opacity=".28" filter="url(#softShadow)"/>
+
+  <g transform="translate(54 47) rotate(-8 105 135)">
+    <rect x="14" y="7" width="178" height="284" rx="35" fill="url(#titanium)"/>
+    <rect x="19" y="12" width="168" height="274" rx="30" fill="url(#back)"/>
+    <path d="M42 31h76c19 0 34 15 34 34v67H42c-14 0-25-11-25-25V56c0-14 11-25 25-25Z" fill="#aaa59d" opacity=".95"/>
+    <g stroke="#cfcac2" stroke-width="5">
+      <circle cx="67" cy="65" r="25" fill="#171a21"/>
+      <circle cx="119" cy="65" r="25" fill="#171a21"/>
+      <circle cx="67" cy="116" r="25" fill="#171a21"/>
+    </g>
+    <g fill="url(#lens)" stroke="#454a55" stroke-width="2">
+      <circle cx="67" cy="65" r="18"/>
+      <circle cx="119" cy="65" r="18"/>
+      <circle cx="67" cy="116" r="18"/>
+    </g>
+    <g fill="#8ca4d1" opacity=".65">
+      <circle cx="61" cy="59" r="5"/>
+      <circle cx="113" cy="59" r="5"/>
+      <circle cx="61" cy="110" r="5"/>
+    </g>
+    <circle cx="124" cy="111" r="8" fill="#252932"/>
+    <circle cx="124" cy="91" r="6" fill="#eee7d1"/>
+    <path d="M103 196c14-22 43-22 57 0-14 23-43 23-57 0Z" fill="#d4cfc7" opacity=".23"/>
+    <rect x="186" y="82" width="8" height="55" rx="4" fill="#706c66"/>
+  </g>
+
+  <g transform="translate(151 34) rotate(8 88 145)">
+    <rect width="174" height="294" rx="36" fill="url(#titanium)"/>
+    <rect x="6" y="6" width="162" height="282" rx="31" fill="#050810"/>
+    <rect x="10" y="10" width="154" height="274" rx="27" fill="url(#screenGlow)"/>
+    <path d="M11 200c36-59 71-71 153-107v191H11Z" fill="#091027" opacity=".68"/>
+    <path d="M11 228c41-35 87-56 153-69v125H11Z" fill="#172b58" opacity=".55"/>
+    <rect x="64" y="17" width="47" height="15" rx="8" fill="#02040a"/>
+    <circle cx="100" cy="24" r="2.5" fill="#25345d"/>
+    <path d="M14 60c21-34 46-48 77-50" fill="none" stroke="#e4eaff" stroke-width="3" opacity=".17"/>
+    <rect x="-4" y="80" width="7" height="53" rx="3.5" fill="#8a867f"/>
+    <rect x="171" y="102" width="7" height="70" rx="3.5" fill="#77736d"/>
+  </g>
+</svg>

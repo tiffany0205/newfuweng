@@ -57,6 +57,20 @@ class ActivityFlowTest extends TestCase
             ->assertSee('current-position-aura', false);
     }
 
+    public function test_activity_renders_square_board_with_direct_dice_trigger(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+
+        $this->actingAs($user)->get('/activity')
+            ->assertOk()
+            ->assertSee('board-square', false)
+            ->assertSee('dice-trigger', false)
+            ->assertSee('dice-orbit', false)
+            ->assertSee('center-statusline', false)
+            ->assertSee('event-rail', false)
+            ->assertDontSee('class="command-card"', false);
+    }
+
     public function test_only_admin_can_open_admin_page(): void
     {
         $this->actingAs(User::where('email', 'demo@example.com')->firstOrFail())->get('/admin')->assertForbidden();

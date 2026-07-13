@@ -24,18 +24,18 @@
 
     <div class="board-wrapper">
       <div class="board-caption"><span>FORTUNE CIRCUIT</span><button type="button" data-open-legend>格子图例 ?</button><span>36 STEPS · LIVE SEASON</span></div>
-      <div class="board" id="board">
+      <div class="board board-square" id="board">
         @foreach($cells as $cell)
           @php
             $pos = $cell->position;
-            if ($pos <= 10) {
+            if ($pos <= 9) {
               $row = 1; $col = $pos + 1;
               $arrow = '→'; $dir = 'dir-right';
             } elseif ($pos <= 18) {
-              $row = $pos - 9; $col = 11;
+              $row = $pos - 8; $col = 10;
               $arrow = '↓'; $dir = 'dir-down';
-            } elseif ($pos <= 28) {
-              $row = 9; $col = 29 - $pos;
+            } elseif ($pos <= 27) {
+              $row = 10; $col = 28 - $pos;
               $arrow = '←'; $dir = 'dir-left';
             } else {
               $row = 37 - $pos; $col = 1;
@@ -69,11 +69,11 @@
         @endforeach
 
         <div class="board-center">
-          <div class="center-orbit orbit-one"></div><div class="center-orbit orbit-two"></div>
-          <div class="center-copy"><span class="season-label">SEASON 01</span><div class="game-title">LUCKY<br><i>JUMP</i></div><p>ROLL · MOVE · WIN</p></div>
-          <div class="command-card" id="diceConsole">
-            <div class="command-top"><span>幸运骰台</span><em><i></i> 服务端随机</em></div>
-            <div class="roll-console">
+          <div class="center-brandmark"><span>LUCKY JUMP</span><small>SEASON 01 · FORTUNE CIRCUIT</small></div>
+          <div class="center-statusline"><span><i></i> READY</span><b>剩余 <em id="centerChance">{{ $state->chance_balance }}</em> 次 · 第 <em id="centerPosition">{{ $state->current_position + 1 }}</em> 格</b></div>
+          <div class="dice-orbit" aria-hidden="true"><span class="orbit-vip"><b>👑</b><small>VIP</small></span><span class="orbit-cash"><b>💎</b><small>USDT</small></span><span class="orbit-energy"><b>🔋</b><small>能量</small></span><span class="orbit-landmark"><b>📍</b><small>地标</small></span></div>
+          <div class="center-action" id="diceConsole">
+            <button id="moveButton" class="dice-trigger" data-url="{{ route('game.move') }}" data-frozen="{{ $state->is_frozen ? '1' : '0' }}" aria-label="{{ $state->is_frozen ? '点击解除冰冻' : '点击骰子掷出好运' }}">
               <div class="dice-stage" id="diceStage" aria-hidden="true">
                 <div class="dice-cube face-1" id="diceCube">
                   <span class="die-face die-face-1"><i></i></span>
@@ -85,20 +85,16 @@
                 </div>
                 <span class="dice-shadow"></span>
               </div>
+              <span class="dice-prompt"><b>{{ $state->is_frozen ? '点击解冻' : '点击骰子' }}</b><small>{{ $state->is_frozen ? '消耗 1 次机会' : '掷出好运' }}</small></span>
+            </button>
+            <div class="roll-feedback">
               <div class="roll-result" id="rollResult" aria-live="polite">
                 <span>{{ $state->is_frozen ? '当前状态' : '等待投掷' }}</span>
                 <div><b id="rollResultValue">—</b><small id="rollResultUnit">点</small></div>
               </div>
             </div>
-            <div class="event" id="event">
-              {{ $state->is_frozen ? '🧊 已被冰冻，需要一次机会解冻' : '好运正在前方，准备出发' }}
-            </div>
-            <button id="moveButton" class="dice-btn" data-url="{{ route('game.move') }}" data-frozen="{{ $state->is_frozen ? '1' : '0' }}">
-              <span class="button-mark">✦</span>
-              <span><strong>{{ $state->is_frozen ? '立即解冻' : '掷出好运' }}</strong><small>{{ $state->is_frozen ? '消耗 1 次机会' : '点击翻转幸运骰子' }}</small></span>
-              <span class="button-arrow">→</span>
-            </button>
           </div>
+          <div class="event-rail" id="event">{{ $state->is_frozen ? '🧊 已被冰冻，需要一次机会解冻' : '好运正在前方，点击中央骰子出发' }}</div>
           <div class="center-rewards"><span>本轮惊喜</span><b>👑 VIP +1</b><b>💎 USDT</b><b>🔋 能量电池</b></div>
         </div>
       </div>

@@ -223,9 +223,14 @@ if (moveButton) moveButton.addEventListener('click', async () => {
         eventEl.textContent = data.result_text;
 
         // Update stats
-        document.querySelector('#chance').textContent = Math.max(0, Number(document.querySelector('#chance').textContent) - 1);
+        const remainingChance = Math.max(0, Number(document.querySelector('#chance').textContent) - 1);
+        document.querySelector('#chance').textContent = remainingChance;
+        const centerChance = document.querySelector('#centerChance');
+        if (centerChance) centerChance.textContent = remainingChance;
         document.querySelector('#lap').textContent = data.to_lap;
         document.querySelector('#position').textContent = data.to_position;
+        const centerPosition = document.querySelector('#centerPosition');
+        if (centerPosition) centerPosition.textContent = Number(data.to_position) + 1;
 
         // Update board
         document.querySelectorAll('.cell').forEach(c => {

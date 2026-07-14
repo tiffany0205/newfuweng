@@ -11,6 +11,17 @@ This document records how AI contributed to the project and how its output was r
 
 ## Activity Log
 
+### 2026-07-14 - 星光地标漏记与位置文案调查
+
+- Objective: 查明用户到达星光地标后没有累计地标或幸运值，以及机会明细只显示“跳棋消耗”的原因。
+- AI contribution: 对比迁移、Seeder、走棋控制器、SQLite 实际数据、机会流水、前端位置更新和排行榜显示，追踪旧库升级与全新测试库之间的差异。
+- Prompt/task summary: 用户反馈到达星光地标后累计活动没有变化，并要求每次掷骰显示实际位置。
+- Resulting artifacts: `docs/superpowers/specs/2026-07-14-landmark-backfill-and-position-display-design.md`。
+- Human review and decisions: 用户确认采用实际位置方案：机会明细显示点数、1～36 格位置和格子名称，并统一页面当前位置。
+- Validation and result: 确认星光广场在 Seeder 中为 `starlight_square / lucky_2`；确认旧迁移只建字段、不写入 12 个地标配置；确认“跳棋消耗”在点数生成前写入且之后未更新。
+- Problems and corrections: 之前的测试只覆盖 `migrate:fresh --seed`，错误地掩盖了已有数据库仅执行迁移时的配置缺口；本次设计增加无 Seeder 的升级测试与历史补偿。
+- Evidence/links: `database/migrations/2026_07_13_000300_create_landmark_help_tables.php`; `database/seeders/DatabaseSeeder.php`; `app/Http/Controllers/GameController.php`。
+
 ### 2026-07-13 - 地标与掷骰反馈排查及设计
 
 - Objective: 确认紫色电池被误认作地标、落到地标后进度不增加的原因，并设计一致的结果反馈。

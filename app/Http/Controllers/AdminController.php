@@ -19,14 +19,34 @@ class AdminController extends Controller
         $this->guard($request);
         $activity = DB::table('activities')->where('enabled', true)->firstOrFail();
         $users = DB::table('users')->leftJoin('activity_users', fn ($j) => $j->on('users.id', '=', 'activity_users.user_id')->where('activity_users.activity_id', $activity->id))->select('users.*', 'activity_users.chance_balance', 'activity_users.completed_laps', 'activity_users.current_position')->get();
-        $winnings = DB::table('winning_records')->join('users', 'users.id', '=', 'winning_records.user_id')->select('winning_records.*', 'users.name')->latest('winning_records.id')->limit(50)->get();
+        $winnings = DB::table('winning_records')
+            ->join('users', 'users.id', '=', 'winning_records.user_id')
+            ->leftJoin('prize_claims', 'winning_records.id', '=', 'prize_claims.winning_record_id')
+            ->where('winning_records.activity_id', $activity->id)
+            ->select(
+                'winning_records.*',
+                'users.name',
+                'prize_claims.id as claim_id',
+                'prize_claims.method as claim_method',
+                'prize_claims.claim_data',
+                'prize_claims.status as claim_status',
+                'prize_claims.admin_note'
+            )
+            ->latest('winning_records.id')
+            ->limit(50)
+            ->get()
+            ->map(function ($winning) {
+                $claimData = json_decode($winning->claim_data ?? '', true);
+                $winning->claim_details = is_array($claimData) ? ($claimData['details'] ?? '—') : '—';
+
+                return $winning;
+            });
         $orders = DB::table('recharge_orders')->join('users', 'users.id', '=', 'recharge_orders.user_id')->select('recharge_orders.*', 'users.name')->latest('recharge_orders.id')->limit(50)->get();
-        $claims = DB::table('prize_claims')->join('winning_records', 'winning_records.id', '=', 'prize_claims.winning_record_id')->join('users', 'users.id', '=', 'prize_claims.user_id')->select('prize_claims.*', 'winning_records.prize_name', 'users.name')->latest('prize_claims.id')->get();
         $tasks = DB::table('task_definitions')->where('activity_id', $activity->id)->orderBy('sort_order')->get();
         $metrics = ['users' => DB::table('activity_users')->where('activity_id', $activity->id)->count(), 'moves' => DB::table('board_moves')->where('activity_id', $activity->id)->count(), 'winners' => DB::table('winning_records')->where('activity_id', $activity->id)->count(), 'pending' => DB::table('winning_records')->where('activity_id', $activity->id)->whereNot('status', 'issued')->count()];
         $audits = DB::table('admin_audit_logs')->join('users', 'users.id', '=', 'admin_audit_logs.admin_id')->select('admin_audit_logs.*', 'users.name')->latest('admin_audit_logs.id')->limit(30)->get();
 
-        return view('admin.index', compact('activity', 'users', 'winnings', 'orders', 'claims', 'tasks', 'metrics', 'audits'));
+        return view('admin.index', compact('activity', 'users', 'winnings', 'orders', 'tasks', 'metrics', 'audits'));
     }
 
     public function recharge(Request $request): RedirectResponse

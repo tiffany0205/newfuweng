@@ -80,4 +80,49 @@ class ExperienceCenterTest extends TestCase
         $user = User::where('email', 'demo@example.com')->firstOrFail();
         $this->actingAs($user)->post('/admin/chances', ['user_id' => $user->id, 'amount' => 10, 'reason' => 'test'])->assertForbidden();
     }
+
+    public function test_admin_sees_tasks_and_one_unified_prize_fulfillment_queue(): void
+    {
+        $admin = User::where('email', 'admin@example.com')->firstOrFail();
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        $activityId = (int) DB::table('activities')->value('id');
+        $waitingId = DB::table('winning_records')->insertGetId([
+            'activity_id' => $activityId,
+            'user_id' => $user->id,
+            'prize_name' => '等待资料奖品',
+            'status' => 'pending',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $submittedId = DB::table('winning_records')->insertGetId([
+            'activity_id' => $activityId,
+            'user_id' => $user->id,
+            'prize_name' => '已提交资料奖品',
+            'status' => 'submitted',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        DB::table('prize_claims')->insert([
+            'winning_record_id' => $submittedId,
+            'user_id' => $user->id,
+            'method' => 'wallet',
+            'claim_data' => json_encode(['details' => 'USDT-TEST-ADDRESS']),
+            'status' => 'submitted',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $this->actingAs($admin)->get('/admin')
+            ->assertOk()
+            ->assertSee('任务管理（6）')
+            ->assertSee('每日签到')
+            ->assertSee('奖品发放管理')
+            ->assertSee('等待资料奖品')
+            ->assertSee('等待用户提交资料')
+            ->assertSee(route('admin.winnings.issue', $waitingId), false)
+            ->assertSee('已提交资料奖品')
+            ->assertSee('USDT-TEST-ADDRESS')
+            ->assertDontSee('<h2>领奖审核</h2>', false)
+            ->assertDontSee('<h2>中奖发放</h2>', false);
+    }
 }

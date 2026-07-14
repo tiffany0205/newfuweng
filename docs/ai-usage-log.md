@@ -11,6 +11,17 @@ This document records how AI contributed to the project and how its output was r
 
 ## Activity Log
 
+### 2026-07-14 - 管理后台任务初始化与奖品发放整合
+
+- Objective: 修复管理后台任务区域可能为空、领奖申请长期无数据，以及领奖审核与中奖发放入口重复的问题。
+- AI contribution: 追踪 Seeder、迁移、用户领奖提交、后台查询和实际 SQLite 数据，确认任务旧库初始化缺口与仅查询 `prize_claims` 的展示缺口；实现幂等任务补偿迁移和统一奖品发放队列。
+- Prompt/task summary: 用户发现后台任务开关和领奖申请没有数据，要求按建议修复管理后台。
+- Resulting artifacts: 6 项默认任务补偿迁移；“任务管理”数量与空状态；覆盖全部中奖记录的“奖品发放管理”；中文流程状态、领取方式与处理表单；测试、设计规格、实施计划和操作文档。
+- Human review and decisions: 用户接受保留实际业务能力、修复初始化并合并重复模块的推荐方案。
+- Validation and result: 两条回归测试先分别因迁移缺失和旧双模块结构按预期失败，实施后专项 2 tests / 16 assertions 通过；现有 SQLite 副本执行 3 个待处理迁移成功并保持 6 条任务。最终 PHPUnit 38 tests / 271 assertions、Node 13 tests、Pint、Vite 58 modules 构建和 Composer 安全审计全部通过，后台界面规则扫描为 0 项问题。
+- Problems and corrections: 实际库已有 6 条任务、25 条中奖和 0 条领奖申请，说明领奖模块空白并非没有中奖，而是查询起点错误；改为中奖记录左连接领奖申请后，未提交资料记录也可见。补偿迁移只插入缺失业务键，不覆盖管理员自定义配置。
+- Evidence/links: `database/migrations/2026_07_14_000700_sync_default_task_definitions.php`; `app/Http/Controllers/AdminController.php`; `resources/views/admin/index.blade.php`; `tests/Feature/TaskDefinitionUpgradeTest.php`。
+
 ### 2026-07-14 - 中奖列表待发放状态高亮
 
 - Objective: 让用户在活动页中奖列表中快速区分待发放与已发放记录。

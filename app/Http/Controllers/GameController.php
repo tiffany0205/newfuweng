@@ -30,11 +30,12 @@ class GameController extends Controller
         $hasMoreTransactions = $transactionPage['has_more'];
         $hasMoreWinnings = $winningPage['has_more'];
         $invites = DB::table('invitation_rewards')->where(['activity_id' => $activity->id, 'inviter_id' => $request->user()->id])->count();
+        $qualifiedInvites = DB::table('invitation_rewards')->where(['activity_id' => $activity->id, 'inviter_id' => $request->user()->id, 'recharge_awarded' => true])->count();
         $skinIcon = DB::table('skin_definitions')->where('id', $request->user()->equipped_skin_id)->value('icon') ?? '🚗';
         $unreadMessages = DB::table('activity_messages')->where('user_id', $request->user()->id)->whereNull('read_at')->count();
         $unlockedLandmarks = DB::table('user_landmarks')->where(['activity_id' => $activity->id, 'user_id' => $request->user()->id])->pluck('visit_count', 'board_cell_id');
 
-        return view('game.index', compact('activity', 'state', 'cells', 'leaderboard', 'checkedIn', 'lastCheckin', 'transactions', 'winnings', 'transactionCursor', 'winningCursor', 'hasMoreTransactions', 'hasMoreWinnings', 'invites', 'skinIcon', 'unreadMessages', 'unlockedLandmarks'));
+        return view('game.index', compact('activity', 'state', 'cells', 'leaderboard', 'checkedIn', 'lastCheckin', 'transactions', 'winnings', 'transactionCursor', 'winningCursor', 'hasMoreTransactions', 'hasMoreWinnings', 'invites', 'qualifiedInvites', 'skinIcon', 'unreadMessages', 'unlockedLandmarks'));
     }
 
     public function chanceRecords(Request $request): JsonResponse

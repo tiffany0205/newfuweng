@@ -109,6 +109,25 @@ class ActivityFlowTest extends TestCase
             ->assertDontSee('class="command-card"', false);
     }
 
+    public function test_activity_renders_shared_task_reward_record_dialog_and_both_triggers(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+
+        $this->actingAs($user)->get('/activity')
+            ->assertOk()
+            ->assertSee('data-task-records="invite"', false)
+            ->assertSee('data-task-records="friend_recharge"', false)
+            ->assertSee(route('game.records.task-rewards'), false)
+            ->assertSee('id="taskRewardDialog"', false)
+            ->assertSee('role="dialog"', false)
+            ->assertSee('aria-modal="true"', false)
+            ->assertSee('data-task-record-list', false)
+            ->assertSee('data-task-record-status', false)
+            ->assertSee('data-task-record-more', false)
+            ->assertSee('邀请记录')
+            ->assertSee('达标记录');
+    }
+
     public function test_activity_renders_compact_ranking_rewards(): void
     {
         $user = User::where('email', 'demo@example.com')->firstOrFail();

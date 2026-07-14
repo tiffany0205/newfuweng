@@ -126,11 +126,11 @@
       </div>
       <div class="task">
         <div class="task-info"><b>👥 邀请好友</b><p>每位有效好友获得 5 次</p></div>
-        <button class="task-action" data-copy="{{ route('register', ['invite' => auth()->user()->invite_code]) }}">复制链接</button>
+        <div class="task-actions"><button type="button" class="task-record-trigger" data-task-records="invite">邀请记录</button><button type="button" class="task-action" data-copy="{{ route('register', ['invite' => auth()->user()->invite_code]) }}">复制链接</button></div>
       </div>
       <div class="task">
         <div class="task-info"><b>🎁 好友首充达标</b><p>首次满 10 USDT 获得 10 次</p></div>
-        <div class="task-action">{{ $invites }} 人</div>
+        <div class="task-actions"><span class="task-count">{{ $qualifiedInvites }} 人</span><button type="button" class="task-record-trigger" data-task-records="friend_recharge">达标记录</button></div>
       </div>
     </div>
 
@@ -150,6 +150,22 @@
       </ol>
     </div>
   </aside>
+</div>
+
+<div class="task-record-dialog" id="taskRewardDialog" role="dialog" aria-modal="true" aria-labelledby="taskRewardTitle" data-url="{{ route('game.records.task-rewards') }}" hidden>
+  <div class="task-record-backdrop" data-task-record-close></div>
+  <section class="task-record-sheet" tabindex="-1">
+    <header class="task-record-header">
+      <div><span data-task-record-kicker>奖励明细</span><h2 id="taskRewardTitle" data-task-record-title>邀请记录</h2><p data-task-record-description>查看好友通过邀请加入后到账的机会</p></div>
+      <button type="button" class="task-record-close" data-task-record-close aria-label="关闭记录弹框">×</button>
+    </header>
+    <div class="task-record-status" data-task-record-status aria-live="polite">正在加载记录…</div>
+    <ol class="task-record-list" data-task-record-list aria-label="任务奖励记录"></ol>
+    <div class="task-record-footer">
+      <button type="button" class="task-record-retry" data-task-record-retry hidden>重新加载</button>
+      <button type="button" class="task-record-more" data-task-record-more hidden>加载更多</button>
+    </div>
+  </section>
 </div>
 
 <section class="records">

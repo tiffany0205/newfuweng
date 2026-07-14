@@ -225,7 +225,9 @@
       <div class="prize-title" id="prizeTitle">本次结果</div>
       <div class="prize-name" id="prizeName"></div>
       <div class="prize-detail" id="prizeDetail"></div>
-      <p class="feedback-result" id="feedbackResult"></p>
+      <div class="feedback-destination" id="feedbackDestination" data-feedback-destination hidden><span>最终停在</span><b></b></div>
+      <section class="feedback-settlement" data-feedback-settlement hidden><span>本次结算</span><ul id="feedbackItems" data-feedback-items></ul></section>
+      <div class="feedback-balances" id="feedbackBalances" data-feedback-balances hidden></div>
       <button type="button" class="prize-btn" id="prizeClose">继续前进</button>
     </div>
   </div>

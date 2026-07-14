@@ -266,7 +266,9 @@ function showRollFeedback(data) {
     const title = document.querySelector('#prizeTitle');
     const name = document.querySelector('#prizeName');
     const detail = document.querySelector('#prizeDetail');
-    const result = document.querySelector('#feedbackResult');
+    const destination = document.querySelector('#feedbackDestination');
+    const items = document.querySelector('#feedbackItems');
+    const balances = document.querySelector('#feedbackBalances');
     const confetti = document.querySelector('#confetti');
     const overlay = document.querySelector('#rollFeedbackOverlay');
     const closeBtn = document.querySelector('#prizeClose');
@@ -276,9 +278,36 @@ function showRollFeedback(data) {
     emoji.textContent = presentation.emoji;
     kicker.textContent = presentation.kicker;
     title.textContent = presentation.title;
-    name.textContent = data.dice_value ? `掷出 ${data.dice_value} 点 · ${data.final_cell_label}` : data.final_cell_label;
+    name.textContent = data.dice_value ? `本次掷出 ${data.dice_value} 点` : '';
     detail.textContent = presentation.detail;
-    result.textContent = data.result_text;
+    detail.hidden = !presentation.detail;
+    if (presentation.destination) {
+        destination.querySelector('b').textContent = `第 ${presentation.destination.position} 格 · ${presentation.destination.label}`;
+        destination.hidden = false;
+    }
+    items.replaceChildren();
+    presentation.items.forEach(item => {
+        const row = document.createElement('li');
+        row.dataset.kind = item.kind;
+        const label = document.createElement('span');
+        label.textContent = item.label;
+        const value = document.createElement('b');
+        value.textContent = item.value;
+        row.append(label, value);
+        items.append(row);
+    });
+    items.closest('[data-feedback-settlement]').hidden = presentation.items.length === 0;
+    balances.replaceChildren();
+    presentation.balances.forEach(balance => {
+        const label = document.createElement('span');
+        label.textContent = `${balance.label}：`;
+        const value = document.createElement('b');
+        value.textContent = balance.value;
+        const row = document.createElement('div');
+        row.append(label, value);
+        balances.append(row);
+    });
+    balances.hidden = presentation.balances.length === 0;
     closeBtn.textContent = presentation.celebrate ? '开心收下' : '继续前进';
 
     if (presentation.celebrate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {

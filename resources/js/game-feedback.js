@@ -48,6 +48,23 @@ export function feedbackPresentation(data) {
         result.detail = `${destination} · ${result.detail}`;
     }
 
+    const summary = data.result_summary;
+    if (summary) {
+        result.title = summary.headline || result.title;
+        result.detail = '';
+        result.destination = summary.destination || null;
+        result.items = Array.isArray(summary.items) ? summary.items : [];
+        result.balances = [
+            summary.balances?.lucky_points !== undefined
+                ? { label: '当前幸运值', value: String(summary.balances.lucky_points) }
+                : null,
+        ].filter(Boolean);
+    } else {
+        result.destination = data.display_position ? { position: data.display_position, label: data.final_cell_label || '当前位置' } : null;
+        result.items = [];
+        result.balances = [];
+    }
+
     return {
         ...result,
         tone: kind,

@@ -51,3 +51,26 @@ test('sound feedback silently handles mute and unsupported audio', () => {
     assert.equal(playFeedbackSound('normal', 'normal', true), false);
     assert.equal(playFeedbackSound('reward', 'vip', false, {}), false);
 });
+
+test('structured settlement separates the main result, destination, changes, and balance', () => {
+    const result = feedbackPresentation({
+        ...base,
+        feedback_type: 'landmark',
+        result_text: '后退2格，后退 2 格，最终抵达 梦想港湾，重复印章转化为幸运值 +1，获得 2 点幸运值',
+        result_summary: {
+            headline: '后退 2 格',
+            destination: { position: 29, label: '梦想港湾' },
+            items: [
+                { kind: 'landmark_repeat', label: '重复到达地标', value: '幸运值 +1' },
+                { kind: 'lucky', label: '梦想港湾效果', value: '幸运值 +2' },
+            ],
+            balances: { lucky_points: 8 },
+        },
+    });
+
+    assert.equal(result.title, '后退 2 格');
+    assert.deepEqual(result.destination, { position: 29, label: '梦想港湾' });
+    assert.deepEqual(result.items.map(item => item.value), ['幸运值 +1', '幸运值 +2']);
+    assert.deepEqual(result.balances, [{ label: '当前幸运值', value: '8' }]);
+    assert.equal(result.resultText, undefined);
+});

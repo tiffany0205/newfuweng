@@ -16,9 +16,11 @@ This document records how AI contributed to the project and how its output was r
 - Objective: 在活动首页任务区域增加邀请好友记录和好友首充达标记录弹框，展示脱敏好友、时间及奖励机会。
 - AI contribution: 核对现有邀请关系、奖励流水和首页任务结构；提出复用响应式弹框与游标分页的设计，并明确隐私和奖励时间口径。
 - Prompt/task summary: 用户要求邀请任务可查看“何时邀请谁、获得几次机会”，好友充值任务可查看“谁在何时充值达标”。
-- Resulting artifacts: `docs/superpowers/specs/2026-07-14-task-invite-recharge-records-design.md`。
+- Resulting artifacts: 设计与实施计划；登录态任务奖励记录接口；活动首页双入口共用响应式弹框；安全 DOM 渲染、游标分页、重试和无障碍关闭交互；功能手册与自动化测试。
 - Human review and decisions: 用户确认按推荐方案直接实施；奖励规则保持邀请注册 5 次、好友首充达标 10 次。
-- Validation and result: 设计阶段，代码和测试尚未实施。
+- Validation and result: 接口测试先因路由不存在按预期失败，随后 2 tests / 18 assertions 通过；弹框渲染测试先因入口不存在按预期失败，随后 1 test / 12 assertions 通过；前端测试先因模块不存在按预期失败，随后 4 tests 通过。最终 PHPUnit 33 tests / 229 assertions、Node 8 tests、Pint、Vite 57 modules 构建和 Composer 安全审计全部通过，界面扫描为 0 项问题；隐私字段搜索确认弹框前端未引用邮箱、订单号、充值金额或充值订单表。
+- Problems and corrections: 初始设计考虑数据库关联动态业务键；实现时改用两段受控查询，避免依赖 SQLite/MySQL 不兼容的字符串拼接语法，同时保持当前用户和当前活动隔离。
+- Evidence/links: commits `cdd25c7`, `1acf45a`, `387be21`; `app/Http/Controllers/GameController.php`; `resources/js/task-reward-records.js`; `tests/Feature/ActivityFlowTest.php`。
 
 ### 2026-07-14 - 排行榜冠军奖品型号升级
 

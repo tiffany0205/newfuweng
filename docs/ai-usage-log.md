@@ -11,6 +11,15 @@ This document records how AI contributed to the project and how its output was r
 
 ## Activity Log
 
+### 2026-07-14 - 掷骰结果层级与棋盘格提示设计
+
+- Objective: 解决走棋结果长句重点不清、幸运值增量与余额混淆，以及棋盘格 hover 提示过小且远离目标的问题。
+- AI contribution: 追踪后端 `result_text`、前端反馈映射和固定右下角格子说明，提出结构化结算响应、四层结果弹框、PC 锚定提示卡与手机底部面板方案。
+- Prompt/task summary: 用户以“后退 2 格后抵达梦想港湾并获得幸运值”为例，要求突出结算重点并增强格子 hover 说明。
+- Resulting artifacts: `docs/superpowers/specs/2026-07-14-roll-feedback-and-cell-tooltip-design.md`。
+- Human review and decisions: 用户确认采用“结论优先 + 分项结算”和锚定格子浮层的推荐方案。
+- Validation and result: 设计阶段，代码和测试尚未实施。
+
 ### 2026-07-14 - 任务邀请与好友充值记录设计
 
 - Objective: 在活动首页任务区域增加邀请好友记录和好友首充达标记录弹框，展示脱敏好友、时间及奖励机会。

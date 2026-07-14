@@ -11,6 +11,15 @@ This document records how AI contributed to the project and how its output was r
 
 ## Activity Log
 
+### 2026-07-14 - 棋盘与记录区邻近布局设计
+
+- Objective: 消除棋盘与机会明细/中奖列表之间因右侧排行榜撑高双栏而产生的无效空白。
+- AI contribution: 检查 Grid 结构、棋盘比例、侧栏高度与记录区页面级定位，识别为双栏高度耦合问题，并比较左侧连续列、排行榜内滚动和棋盘抽屉三种方案。
+- Prompt/task summary: 用户反馈棋盘下方的机会明细和中奖列表距离过远、中间空白过高。
+- Resulting artifacts: `docs/superpowers/specs/2026-07-14-board-records-proximity-design.md`。
+- Human review and decisions: 用户选择推荐的左侧连续内容列方案。
+- Validation and result: 布局规则扫描为 0 项；结构分析确认 `.records` 位于 `.dashboard` 外，右侧较高内容会推迟记录区出现。代码和测试尚未实施。
+
 ### 2026-07-14 - 掷骰结果层级与棋盘格提示设计
 
 - Objective: 解决走棋结果长句重点不清、幸运值增量与余额混淆，以及棋盘格 hover 提示过小且远离目标的问题。

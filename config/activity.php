@@ -4,8 +4,8 @@ return [
     'ranking_rewards' => [
         [
             'rank' => '第 1 名',
-            'prize' => 'iPhone 16 Pro',
-            'asset' => 'images/ranking/iphone-16-pro.svg',
+            'prize' => 'iPhone 17 Pro',
+            'asset' => 'images/ranking/iphone-17-pro.svg',
             'type' => 'champion',
         ],
         [

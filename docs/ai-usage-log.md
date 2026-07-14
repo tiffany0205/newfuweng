@@ -16,10 +16,10 @@ This document records how AI contributed to the project and how its output was r
 - Objective: 将排行榜第一名奖品从 iPhone 16 Pro 统一升级为 iPhone 17 Pro。
 - AI contribution: 盘点生产配置、排行榜组件、奖品 SVG、当前文档、设计稿和回归测试中的型号引用，并区分当前交付物与历史设计记录。
 - Prompt/task summary: 用户要求把苹果 16 Pro 奖品更换为苹果 17 Pro。
-- Resulting artifacts: `docs/superpowers/specs/2026-07-14-iphone-17-pro-ranking-prize-design.md`。
+- Resulting artifacts: 设计说明与实施计划；`iPhone 17 Pro` 生产配置；`iphone-17-pro.svg` 项目奖品图；当前手册、设计稿和回归测试更新。
 - Human review and decisions: 用户指定新奖品型号为 iPhone 17 Pro，其他排名奖励不变。
-- Validation and result: 实现与全量验证结果在交付前补录。
-- Evidence/links: `config/activity.php`; `resources/views/components/ranking-rewards.blade.php`; `public/images/ranking/iphone-16-pro.svg`。
+- Validation and result: 两个排行榜测试先因页面仍输出 `iPhone 16 Pro` 按预期失败；配置和资产更新后，专项测试 2 tests / 23 assertions 通过；最终 PHPUnit 30 tests / 199 assertions、Node 4 tests、Pint、Vite 56 modules 构建和 Composer 安全审计全部通过，界面扫描为 0 项问题；确认新 SVG 存在、旧 SVG 已移除，当前生产配置与手册无旧型号残留。
+- Evidence/links: `config/activity.php`; `resources/views/components/ranking-rewards.blade.php`; `public/images/ranking/iphone-17-pro.svg`。
 
 ### 2026-07-14 - 星光地标漏记与位置文案调查
 
@@ -69,5 +69,5 @@ This document records how AI contributed to the project and how its output was r
 
 - Main AI contributions: 根因分析、交互设计、Laravel/SQLite 实现、统一前端反馈、斜置 3D 骰子、自动化测试、部署与操作文档。
 - Main human corrections and decisions: 明确紫色只属于正式地标；要求所有掷骰结果都有弹框和音效；确认分级反馈与斜置三面可见骰子方案。
-- Measured outcomes: 当前最终验证为 PHPUnit 30 tests / 195 assertions、Node 4 tests、Vite 56 modules 构建成功，Pint 与 Composer 审计通过，界面规范扫描 0 项问题。
+- Measured outcomes: 当前最终验证为 PHPUnit 30 tests / 199 assertions、Node 4 tests、Vite 56 modules 构建成功，Pint 与 Composer 审计通过，界面规范扫描 0 项问题。
 - Limitations and unresolved risks: Web Audio 受浏览器与设备音量策略影响，不支持时按设计静默降级；生产环境更新必须先执行数据库迁移和前端构建。

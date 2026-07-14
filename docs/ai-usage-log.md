@@ -11,6 +11,15 @@ This document records how AI contributed to the project and how its output was r
 
 ## Activity Log
 
+### 2026-07-14 - 任务邀请与好友充值记录设计
+
+- Objective: 在活动首页任务区域增加邀请好友记录和好友首充达标记录弹框，展示脱敏好友、时间及奖励机会。
+- AI contribution: 核对现有邀请关系、奖励流水和首页任务结构；提出复用响应式弹框与游标分页的设计，并明确隐私和奖励时间口径。
+- Prompt/task summary: 用户要求邀请任务可查看“何时邀请谁、获得几次机会”，好友充值任务可查看“谁在何时充值达标”。
+- Resulting artifacts: `docs/superpowers/specs/2026-07-14-task-invite-recharge-records-design.md`。
+- Human review and decisions: 用户确认按推荐方案直接实施；奖励规则保持邀请注册 5 次、好友首充达标 10 次。
+- Validation and result: 设计阶段，代码和测试尚未实施。
+
 ### 2026-07-14 - 排行榜冠军奖品型号升级
 
 - Objective: 将排行榜第一名奖品从 iPhone 16 Pro 统一升级为 iPhone 17 Pro。

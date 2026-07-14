@@ -109,6 +109,17 @@ class ActivityFlowTest extends TestCase
             ->assertDontSee('class="command-card"', false);
     }
 
+    public function test_activity_keeps_records_inside_the_game_column_before_the_sidebar(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        $html = $this->actingAs($user)->get('/activity')->assertOk()->getContent();
+
+        $this->assertMatchesRegularExpression(
+            '/<div class="game-column">.*<section class="game-area">.*<section class="records">.*<\/div>\s*<aside class="side-panel">/s',
+            $html
+        );
+    }
+
     public function test_activity_renders_shared_task_reward_record_dialog_and_both_triggers(): void
     {
         $user = User::where('email', 'demo@example.com')->firstOrFail();
@@ -155,8 +166,8 @@ class ActivityFlowTest extends TestCase
         $response = $this->actingAs($user)->get('/activity')->assertOk();
         $html = $response->getContent();
 
-        $this->assertStringContainsString("<details open>\n    <summary>机会明细", $html);
-        $this->assertStringContainsString("<details open>\n    <summary>中奖列表", $html);
+        $this->assertMatchesRegularExpression('/<details open>\s*<summary>机会明细<\/summary>/', $html);
+        $this->assertMatchesRegularExpression('/<details open>\s*<summary>中奖列表<\/summary>/', $html);
         $this->assertSame(10, substr_count($html, 'class="chance-record-row"'));
         $this->assertSame(10, substr_count($html, 'class="winning-record-row"'));
     }

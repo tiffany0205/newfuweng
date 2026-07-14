@@ -151,6 +151,45 @@ class LandmarkHelpTest extends TestCase
         $this->assertSame(2, DB::table('activity_users')->where(['activity_id' => $activityId, 'user_id' => $user->id])->value('lucky_points'));
     }
 
+    public function test_repeated_lucky_landmark_returns_persisted_structured_settlement(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        $activityId = (int) DB::table('activities')->value('id');
+        $harbor = DB::table('board_cells')->where(['activity_id' => $activityId, 'position' => 28])->firstOrFail();
+        DB::table('activity_users')->where(['activity_id' => $activityId, 'user_id' => $user->id])->update(['current_position' => 26, 'lucky_points' => 5]);
+        DB::table('user_landmarks')->insert([
+            'activity_id' => $activityId,
+            'user_id' => $user->id,
+            'board_cell_id' => $harbor->id,
+            'visit_count' => 1,
+            'first_unlocked_at' => now()->subDay(),
+            'last_visited_at' => now()->subDay(),
+            'created_at' => now()->subDay(),
+            'updated_at' => now()->subDay(),
+        ]);
+
+        DB::table('board_cells')->where(['activity_id' => $activityId, 'position' => 27])->update(['type' => 'forward', 'label' => '前进1格', 'value' => 1, 'category' => 'boost']);
+        foreach (range(29, 32) as $position) {
+            DB::table('board_cells')->where(['activity_id' => $activityId, 'position' => $position])->update(['type' => 'backward', 'label' => '后退'.($position - 28).'格', 'value' => $position - 28, 'category' => 'risk']);
+        }
+
+        $requestId = (string) Str::uuid();
+        $first = $this->actingAs($user)->postJson('/activity/move', ['request_id' => $requestId])
+            ->assertOk()
+            ->assertJsonPath('result_summary.destination.position', 29)
+            ->assertJsonPath('result_summary.destination.label', '梦想港湾')
+            ->assertJsonPath('result_summary.items.0.label', '重复到达地标')
+            ->assertJsonPath('result_summary.items.0.value', '幸运值 +1')
+            ->assertJsonPath('result_summary.items.1.label', '梦想港湾效果')
+            ->assertJsonPath('result_summary.items.1.value', '幸运值 +2')
+            ->assertJsonPath('result_summary.balances.lucky_points', 8);
+
+        $second = $this->actingAs($user)->postJson('/activity/move', ['request_id' => $requestId])->assertOk();
+        $this->assertSame($first->json('result_summary'), $second->json('result_summary'));
+        $this->assertSame(8, DB::table('activity_users')->where(['activity_id' => $activityId, 'user_id' => $user->id])->value('lucky_points'));
+        $this->assertNotNull(DB::table('board_moves')->where('request_id', $requestId)->value('result_summary'));
+    }
+
     public function test_movement_effect_collects_the_final_landmark(): void
     {
         $user = User::where('email', 'demo@example.com')->firstOrFail();

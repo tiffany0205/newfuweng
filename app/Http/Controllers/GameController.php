@@ -134,7 +134,13 @@ class GameController extends Controller
 
                     $finalLabel = DB::table('board_cells')->where(['activity_id' => $activity->id, 'position' => $state->current_position])->value('label') ?? '当前位置';
 
-                    $move = $this->saveMove($data['request_id'], $activity->id, $request->user()->id, 'unfreeze', null, $state->completed_laps, $state->current_position, $state->completed_laps, $state->current_position, 'unfreeze', '解冻成功，下次可以继续前进', 'normal', $finalLabel, false);
+                    $summary = [
+                        'headline' => '解冻成功',
+                        'destination' => ['position' => (int) $state->current_position + 1, 'label' => $finalLabel],
+                        'items' => [['kind' => 'status', 'label' => '冰冻状态', 'value' => '已解除']],
+                        'balances' => [],
+                    ];
+                    $move = $this->saveMove($data['request_id'], $activity->id, $request->user()->id, 'unfreeze', null, $state->completed_laps, $state->current_position, $state->completed_laps, $state->current_position, 'unfreeze', '解冻成功，下次可以继续前进', $summary, 'normal', $finalLabel, false);
                     $this->syncMoveTransaction($move);
 
                     return $move;
@@ -190,6 +196,7 @@ class GameController extends Controller
                     ? $cell
                     : ($finalCell->category === 'landmark' ? $finalCell : null);
                 $landmarkUnlocked = false;
+                $landmarkResult = null;
                 if ($landmarkCell) {
                     $landmarkResult = $this->visitLandmark($activity->id, $request->user()->id, $landmarkCell, $data['request_id']);
                     $text .= $landmarkResult['text'];
@@ -202,7 +209,8 @@ class GameController extends Controller
                     default => 'normal',
                 };
                 DB::table('activity_users')->where('id', $state->id)->update($updates);
-                $move = $this->saveMove($data['request_id'], $activity->id, $request->user()->id, 'move', $dice, $state->completed_laps, $state->current_position, $lap, $position, $cell->type, $text, $feedbackType, $finalCell->label, $landmarkUnlocked);
+                $summary = $this->buildResultSummary($activity->id, $request->user()->id, $cell, $finalCell, $position, $updates, $landmarkResult);
+                $move = $this->saveMove($data['request_id'], $activity->id, $request->user()->id, 'move', $dice, $state->completed_laps, $state->current_position, $lap, $position, $cell->type, $text, $summary, $feedbackType, $finalCell->label, $landmarkUnlocked);
                 $this->syncMoveTransaction($move);
                 $this->awardCell($activity->id, $request->user(), $cell, $move->id);
                 $this->syncUnlocks($activity->id, $request->user()->id, $lap);
@@ -255,42 +263,57 @@ class GameController extends Controller
     {
         $record = DB::table('user_landmarks')->where(['activity_id' => $activityId, 'user_id' => $userId, 'board_cell_id' => $cell->id])->first();
         $first = ! $record;
+        $items = [];
+        $luckyDelta = 0;
         if ($first) {
             DB::table('user_landmarks')->insert(['activity_id' => $activityId, 'user_id' => $userId, 'board_cell_id' => $cell->id, 'visit_count' => 1, 'first_unlocked_at' => now(), 'last_visited_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
         } else {
             DB::table('user_landmarks')->where('id', $record->id)->update(['visit_count' => $record->visit_count + 1, 'last_visited_at' => now(), 'updated_at' => now()]);
             DB::table('activity_users')->where(['activity_id' => $activityId, 'user_id' => $userId])->increment('lucky_points');
+            $items[] = ['kind' => 'landmark_repeat', 'label' => '重复到达地标', 'value' => '幸运值 +1'];
+            $luckyDelta++;
         }
         $effectText = '';
         if ($cell->effect_code === 'free_roll') {
             $this->changeChance($activityId, $userId, 1, 'landmark', 'landmark-'.$requestId, $cell->label.'免费通行');
             $effectText = '，返还 1 次跳棋机会';
+            $items[] = ['kind' => 'chance', 'label' => $cell->label.'效果', 'value' => '跳棋机会 +1'];
         } elseif (in_array($cell->effect_code, ['freeze_guard', 'reroll', 'high_roll'], true)) {
             DB::table('user_active_effects')->insert(['user_id' => $userId, 'activity_id' => $activityId, 'effect' => $cell->effect_code, 'remaining_uses' => 1, 'expires_at' => now()->addDays(7), 'created_at' => now(), 'updated_at' => now()]);
             $effectText = match ($cell->effect_code) {
                 'freeze_guard' => '，获得一次冰冻免疫', 'reroll' => '，下一次自动重掷并取较大点数', 'high_roll' => '，下一次骰子最低 4 点'
             };
+            $items[] = ['kind' => 'effect', 'label' => $cell->label.'效果', 'value' => match ($cell->effect_code) {
+                'freeze_guard' => '冰冻免疫 ×1', 'reroll' => '重掷效果 ×1', 'high_roll' => '下次最低 4 点'
+            }];
         } elseif (str_starts_with((string) $cell->effect_code, 'lucky_')) {
             $points = (int) str_replace('lucky_', '', $cell->effect_code);
             DB::table('activity_users')->where(['activity_id' => $activityId, 'user_id' => $userId])->increment('lucky_points', $points);
             $effectText = "，获得 {$points} 点幸运值";
+            $items[] = ['kind' => 'lucky', 'label' => $cell->label.'效果', 'value' => "幸运值 +{$points}"];
+            $luckyDelta += $points;
         } elseif ($cell->effect_code === 'rainbow') {
             $roll = random_int(1, 3);
             if ($roll === 1) {
                 $this->changeChance($activityId, $userId, 1, 'landmark', 'landmark-'.$requestId, '彩虹惊喜');
                 $effectText = '，彩虹惊喜：机会 +1';
+                $items[] = ['kind' => 'chance', 'label' => '彩虹惊喜', 'value' => '跳棋机会 +1'];
             } elseif ($roll === 2) {
                 DB::table('users')->where('id', $userId)->increment('battery');
                 $effectText = '，彩虹惊喜：电池 +1';
+                $items[] = ['kind' => 'battery', 'label' => '彩虹惊喜', 'value' => '电池 +1'];
             } else {
                 DB::table('activity_users')->where(['activity_id' => $activityId, 'user_id' => $userId])->increment('lucky_points', 2);
                 $effectText = '，彩虹惊喜：幸运值 +2';
+                $items[] = ['kind' => 'lucky', 'label' => '彩虹惊喜', 'value' => '幸运值 +2'];
+                $luckyDelta += 2;
             }
         } elseif ($cell->effect_code === 'shield' && $first) {
             $shield = DB::table('item_definitions')->where('code', 'shield')->first();
             DB::table('user_items')->insertOrIgnore(['user_id' => $userId, 'item_definition_id' => $shield->id, 'quantity' => 0, 'created_at' => now(), 'updated_at' => now()]);
             DB::table('user_items')->where(['user_id' => $userId, 'item_definition_id' => $shield->id])->increment('quantity');
             $effectText = '，首次解锁额外获得防护盾 ×1';
+            $items[] = ['kind' => 'item', 'label' => $cell->label.'首次解锁', 'value' => '防护盾 ×1'];
         }
         $count = DB::table('user_landmarks')->where(['activity_id' => $activityId, 'user_id' => $userId])->count();
         $total = DB::table('board_cells')->where(['activity_id' => $activityId, 'category' => 'landmark'])->count();
@@ -298,6 +321,49 @@ class GameController extends Controller
         return [
             'text' => ($first ? "，新地标印章已解锁（{$count}/{$total}）" : '，重复印章转化为幸运值 +1').$effectText,
             'unlocked' => $first,
+            'items' => array_merge($first ? [['kind' => 'landmark_unlock', 'label' => '新地标印章', 'value' => "已解锁 {$count}/{$total}"]] : [], $items),
+            'lucky_delta' => $luckyDelta,
+        ];
+    }
+
+    private function buildResultSummary(int $activityId, int $userId, object $cell, object $finalCell, int $position, array $updates, ?array $landmarkResult): array
+    {
+        $headline = match ($cell->type) {
+            'forward' => '前进 '.$cell->value.' 格',
+            'backward' => '后退 '.$cell->value.' 格',
+            'bomb' => $position === 0 ? '返回本圈起点' : '成功避开炸弹',
+            'freeze' => array_key_exists('is_frozen', $updates) ? '棋子被冰冻' : '成功免疫冰冻',
+            'vip' => 'VIP 等级 +1',
+            'battery' => '获得能量电池',
+            'chance' => '获得额外机会',
+            'prize' => '获得幸运奖励',
+            default => $landmarkResult ? ($landmarkResult['unlocked'] ? '新地标已解锁' : '再次抵达地标') : '平稳抵达',
+        };
+        $items = $landmarkResult['items'] ?? [];
+        if (! $landmarkResult) {
+            $item = match ($cell->type) {
+                'bomb' => ['kind' => 'risk', 'label' => '位置影响', 'value' => $position === 0 ? '回到本圈起点' : '防护效果已生效'],
+                'freeze' => ['kind' => 'risk', 'label' => '状态影响', 'value' => array_key_exists('is_frozen', $updates) ? '下次消耗机会解冻' : '冰冻免疫已生效'],
+                'vip' => ['kind' => 'vip', 'label' => 'VIP 奖励', 'value' => '等级 +1'],
+                'battery' => ['kind' => 'battery', 'label' => '能量奖励', 'value' => '电池 +'.$cell->value],
+                'chance' => ['kind' => 'chance', 'label' => '机会奖励', 'value' => '跳棋机会 +'.$cell->value],
+                'prize' => ['kind' => 'prize', 'label' => '中奖奖励', 'value' => $cell->label],
+                default => null,
+            };
+            if ($item) {
+                $items[] = $item;
+            }
+        }
+        $balances = [];
+        if (($landmarkResult['lucky_delta'] ?? 0) > 0) {
+            $balances['lucky_points'] = (int) DB::table('activity_users')->where(['activity_id' => $activityId, 'user_id' => $userId])->value('lucky_points');
+        }
+
+        return [
+            'headline' => $headline,
+            'destination' => ['position' => $position + 1, 'label' => $finalCell->label],
+            'items' => $items,
+            'balances' => $balances,
         ];
     }
 
@@ -313,9 +379,9 @@ class GameController extends Controller
         }
     }
 
-    private function saveMove(string $id, int $activityId, int $userId, string $action, ?int $dice, int $fromLap, int $fromPos, int $toLap, int $toPos, string $type, string $text, string $feedbackType, string $finalCellLabel, bool $landmarkUnlocked): object
+    private function saveMove(string $id, int $activityId, int $userId, string $action, ?int $dice, int $fromLap, int $fromPos, int $toLap, int $toPos, string $type, string $text, array $summary, string $feedbackType, string $finalCellLabel, bool $landmarkUnlocked): object
     {
-        $pk = DB::table('board_moves')->insertGetId(['request_id' => $id, 'activity_id' => $activityId, 'user_id' => $userId, 'action_type' => $action, 'dice_value' => $dice, 'from_lap' => $fromLap, 'from_position' => $fromPos, 'to_lap' => $toLap, 'to_position' => $toPos, 'cell_type' => $type, 'result_text' => $text, 'feedback_type' => $feedbackType, 'final_cell_label' => $finalCellLabel, 'landmark_unlocked' => $landmarkUnlocked, 'created_at' => now(), 'updated_at' => now()]);
+        $pk = DB::table('board_moves')->insertGetId(['request_id' => $id, 'activity_id' => $activityId, 'user_id' => $userId, 'action_type' => $action, 'dice_value' => $dice, 'from_lap' => $fromLap, 'from_position' => $fromPos, 'to_lap' => $toLap, 'to_position' => $toPos, 'cell_type' => $type, 'result_text' => $text, 'result_summary' => json_encode($summary, JSON_UNESCAPED_UNICODE), 'feedback_type' => $feedbackType, 'final_cell_label' => $finalCellLabel, 'landmark_unlocked' => $landmarkUnlocked, 'created_at' => now(), 'updated_at' => now()]);
 
         return DB::table('board_moves')->find($pk);
     }
@@ -327,6 +393,14 @@ class GameController extends Controller
         $move->landmark_count = DB::table('user_landmarks')->where(['activity_id' => $move->activity_id, 'user_id' => $move->user_id])->count();
         $move->landmark_total = DB::table('board_cells')->where(['activity_id' => $move->activity_id, 'category' => 'landmark'])->count();
         $move->lucky_points = (int) DB::table('activity_users')->where(['activity_id' => $move->activity_id, 'user_id' => $move->user_id])->value('lucky_points');
+        $move->result_summary = $move->result_summary
+            ? json_decode($move->result_summary, true)
+            : [
+                'headline' => $move->action_type === 'unfreeze' ? '解冻成功' : '本次移动完成',
+                'destination' => ['position' => (int) $move->to_position + 1, 'label' => $move->final_cell_label ?: '当前位置'],
+                'items' => [],
+                'balances' => [],
+            ];
         $transaction = DB::table('chance_transactions')->where([
             'activity_id' => $move->activity_id,
             'user_id' => $move->user_id,

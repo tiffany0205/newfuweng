@@ -117,7 +117,10 @@ class GameController extends Controller
 
                     $finalLabel = DB::table('board_cells')->where(['activity_id' => $activity->id, 'position' => $state->current_position])->value('label') ?? '当前位置';
 
-                    return $this->saveMove($data['request_id'], $activity->id, $request->user()->id, 'unfreeze', null, $state->completed_laps, $state->current_position, $state->completed_laps, $state->current_position, 'unfreeze', '解冻成功，下次可以继续前进', 'normal', $finalLabel, false);
+                    $move = $this->saveMove($data['request_id'], $activity->id, $request->user()->id, 'unfreeze', null, $state->completed_laps, $state->current_position, $state->completed_laps, $state->current_position, 'unfreeze', '解冻成功，下次可以继续前进', 'normal', $finalLabel, false);
+                    $this->syncMoveTransaction($move);
+
+                    return $move;
                 }
                 $dice = random_int(1, 6);
                 if ($this->consumeEffect($request->user()->id, $activity->id, 'reroll')) {
@@ -183,6 +186,7 @@ class GameController extends Controller
                 };
                 DB::table('activity_users')->where('id', $state->id)->update($updates);
                 $move = $this->saveMove($data['request_id'], $activity->id, $request->user()->id, 'move', $dice, $state->completed_laps, $state->current_position, $lap, $position, $cell->type, $text, $feedbackType, $finalCell->label, $landmarkUnlocked);
+                $this->syncMoveTransaction($move);
                 $this->awardCell($activity->id, $request->user(), $cell, $move->id);
                 $this->syncUnlocks($activity->id, $request->user()->id, $lap);
 
@@ -302,10 +306,42 @@ class GameController extends Controller
     private function moveResponse(object $move): JsonResponse
     {
         $move->landmark_unlocked = (bool) $move->landmark_unlocked;
+        $move->display_position = (int) $move->to_position + 1;
         $move->landmark_count = DB::table('user_landmarks')->where(['activity_id' => $move->activity_id, 'user_id' => $move->user_id])->count();
         $move->landmark_total = DB::table('board_cells')->where(['activity_id' => $move->activity_id, 'category' => 'landmark'])->count();
+        $move->lucky_points = (int) DB::table('activity_users')->where(['activity_id' => $move->activity_id, 'user_id' => $move->user_id])->value('lucky_points');
+        $transaction = DB::table('chance_transactions')->where([
+            'activity_id' => $move->activity_id,
+            'user_id' => $move->user_id,
+            'business_key' => 'move-'.$move->request_id,
+        ])->firstOrFail();
+        $move->chance_transaction = [
+            'id' => (int) $transaction->id,
+            'created_at' => $transaction->created_at,
+            'remark' => $transaction->remark,
+            'amount' => (int) $transaction->amount,
+            'balance_after' => (int) $transaction->balance_after,
+        ];
 
         return response()->json($move);
+    }
+
+    private function syncMoveTransaction(object $move): void
+    {
+        $position = (int) $move->to_position + 1;
+        $label = $move->final_cell_label ?: '当前位置';
+        $remark = $move->action_type === 'unfreeze'
+            ? "解冻成功 · 停留第 {$position} 格 {$label}"
+            : "掷出 {$move->dice_value} 点 · 到达第 {$position} 格 {$label}";
+
+        $updated = DB::table('chance_transactions')->where([
+            'activity_id' => $move->activity_id,
+            'user_id' => $move->user_id,
+            'business_key' => 'move-'.$move->request_id,
+        ])->update(['remark' => $remark, 'updated_at' => now()]);
+        if ($updated !== 1) {
+            throw new \RuntimeException('走棋机会流水更新失败');
+        }
     }
 
     private function changeChance(int $activityId, int $userId, int $amount, string $type, string $key, string $remark): void

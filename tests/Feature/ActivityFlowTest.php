@@ -34,15 +34,39 @@ class ActivityFlowTest extends TestCase
         $this->actingAs($user)->post('/activity/checkin')->assertSessionHas('error');
     }
 
-    public function test_move_costs_one_chance_and_is_idempotent(): void
+    public function test_move_returns_actual_position_transaction_and_is_idempotent(): void
     {
         $user = User::where('email', 'demo@example.com')->firstOrFail();
         $requestId = (string) Str::uuid();
-        $this->actingAs($user)->postJson('/activity/move', ['request_id' => $requestId])->assertOk()->assertJsonStructure(['dice_value', 'to_position', 'result_text']);
-        $this->actingAs($user)->postJson('/activity/move', ['request_id' => $requestId])->assertOk();
+        $first = $this->actingAs($user)->postJson('/activity/move', ['request_id' => $requestId])
+            ->assertOk()
+            ->assertJsonStructure(['dice_value', 'to_position', 'display_position', 'result_text', 'lucky_points', 'chance_transaction'])
+            ->assertJsonPath('display_position', fn (int $value) => $value >= 1 && $value <= 36)
+            ->assertJsonPath('chance_transaction.remark', fn (string $remark) => str_contains($remark, '到达第 '));
+        $this->actingAs($user)->postJson('/activity/move', ['request_id' => $requestId])
+            ->assertOk()
+            ->assertJsonPath('display_position', $first->json('display_position'))
+            ->assertJsonPath('chance_transaction.remark', $first->json('chance_transaction.remark'));
         $this->assertSame(-1, DB::table('chance_transactions')->where('business_key', 'move-'.$requestId)->value('amount'));
         $this->assertSame(1, DB::table('chance_transactions')->where('business_key', 'move-'.$requestId)->count());
         $this->assertSame(1, DB::table('board_moves')->where('request_id', $requestId)->count());
+    }
+
+    public function test_frozen_move_records_the_actual_stay_position(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        $activityId = DB::table('activities')->value('id');
+        DB::table('activity_users')->where(['activity_id' => $activityId, 'user_id' => $user->id])->update([
+            'current_position' => 16,
+            'is_frozen' => true,
+        ]);
+
+        $requestId = (string) Str::uuid();
+        $this->actingAs($user)->postJson('/activity/move', ['request_id' => $requestId])
+            ->assertOk()
+            ->assertJsonPath('display_position', 17)
+            ->assertJsonPath('final_cell_label', '星光广场')
+            ->assertJsonPath('chance_transaction.remark', '解冻成功 · 停留第 17 格 星光广场');
     }
 
     public function test_activity_renders_premium_dice_stage_and_result_feedback(): void

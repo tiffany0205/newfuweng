@@ -120,6 +120,37 @@ class LandmarkHelpTest extends TestCase
         $this->assertSame($before, DB::table('activity_users')->where('user_id', $user->id)->value('chance_balance'));
     }
 
+    public function test_first_star_landmark_visit_adds_lucky_points_and_actual_position(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        $activityId = DB::table('activities')->value('id');
+        foreach (range(1, 6) as $position) {
+            DB::table('board_cells')->where(['activity_id' => $activityId, 'position' => $position])->update([
+                'type' => 'forward',
+                'label' => '前往星光广场',
+                'value' => 16 - $position,
+                'category' => 'boost',
+                'landmark_code' => null,
+                'effect_code' => null,
+            ]);
+        }
+
+        $requestId = (string) Str::uuid();
+        $response = $this->actingAs($user)->postJson('/activity/move', ['request_id' => $requestId])
+            ->assertOk()
+            ->assertJsonPath('display_position', 17)
+            ->assertJsonPath('final_cell_label', '星光广场')
+            ->assertJsonPath('landmark_unlocked', true)
+            ->assertJsonPath('landmark_count', 1)
+            ->assertJsonPath('lucky_points', 2);
+
+        $this->assertStringContainsString(
+            "掷出 {$response->json('dice_value')} 点 · 到达第 17 格 星光广场",
+            $response->json('chance_transaction.remark')
+        );
+        $this->assertSame(2, DB::table('activity_users')->where(['activity_id' => $activityId, 'user_id' => $user->id])->value('lucky_points'));
+    }
+
     public function test_movement_effect_collects_the_final_landmark(): void
     {
         $user = User::where('email', 'demo@example.com')->firstOrFail();

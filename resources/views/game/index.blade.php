@@ -134,7 +134,17 @@
         <thead><tr><th>时间</th><th>奖品</th><th>状态</th></tr></thead>
         <tbody>
           @forelse($winnings as $row)
-            <tr class="winning-record-row" data-record-id="{{ $row->id }}"><td>{{ $row->created_at }}</td><td>{{ $row->prize_name }}</td><td>{{ $row->status === 'issued' ? '已发放' : '待发放' }}</td></tr>
+            <tr class="winning-record-row" data-record-id="{{ $row->id }}">
+              <td>{{ $row->created_at }}</td>
+              <td>{{ $row->prize_name }}</td>
+              <td>
+                @if($row->status === 'issued')
+                  <span class="winning-status winning-status--issued"><span aria-hidden="true">✓</span><span>已发放</span></span>
+                @else
+                  <span class="winning-status winning-status--pending"><span aria-hidden="true">●</span><span>待发放</span></span>
+                @endif
+              </td>
+            </tr>
           @empty
             <tr><td colspan="3">暂无中奖记录</td></tr>
           @endforelse

@@ -172,6 +172,31 @@ class ActivityFlowTest extends TestCase
         $this->assertSame(10, substr_count($html, 'class="winning-record-row"'));
     }
 
+    public function test_winning_statuses_render_as_semantic_badges_and_paginate_with_machine_status(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        $activityId = DB::table('activities')->value('id');
+        $this->insertRecordFixtures($activityId, $user->id, 12, 'status');
+
+        $response = $this->actingAs($user)->get('/activity')->assertOk();
+        $response->assertSee('winning-status winning-status--pending', false)
+            ->assertSee('winning-status winning-status--issued', false)
+            ->assertSee('<span aria-hidden="true">●</span><span>待发放</span>', false)
+            ->assertSee('<span aria-hidden="true">✓</span><span>已发放</span>', false);
+
+        $winningIds = DB::table('winning_records')
+            ->where(['activity_id' => $activityId, 'user_id' => $user->id])
+            ->orderByDesc('id')
+            ->pluck('id')
+            ->all();
+
+        $this->actingAs($user)
+            ->getJson(route('game.records.winnings', ['cursor' => $winningIds[9]]))
+            ->assertOk()
+            ->assertJsonPath('data.0.status', 'issued')
+            ->assertJsonPath('data.1.status', 'pending');
+    }
+
     public function test_records_endpoints_return_independent_cursor_pages_for_current_user(): void
     {
         $user = User::where('email', 'demo@example.com')->firstOrFail();

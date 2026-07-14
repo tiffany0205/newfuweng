@@ -86,6 +86,22 @@ document.querySelectorAll('.record-loader').forEach(loader => {
         row.appendChild(cell);
     }
 
+    function addWinningStatusCell(row, record) {
+        const status = record.status === 'issued' ? 'issued' : 'pending';
+        const cell = document.createElement('td');
+        const badge = document.createElement('span');
+        const icon = document.createElement('span');
+        const label = document.createElement('span');
+
+        badge.className = `winning-status winning-status--${status}`;
+        icon.setAttribute('aria-hidden', 'true');
+        icon.textContent = status === 'issued' ? '✓' : '●';
+        label.textContent = record.status_label ?? (status === 'issued' ? '已发放' : '待发放');
+        badge.append(icon, label);
+        cell.appendChild(badge);
+        row.appendChild(cell);
+    }
+
     function appendRecord(record) {
         const id = String(record.id);
         if (seen.has(id) || tbody.querySelector(`[data-record-id="${id}"]`)) return;
@@ -103,7 +119,7 @@ document.querySelectorAll('.record-loader').forEach(loader => {
             row.className = 'winning-record-row';
             addCell(row, record.created_at);
             addCell(row, record.prize_name);
-            addCell(row, record.status_label);
+            addWinningStatusCell(row, record);
         }
         tbody.appendChild(row);
         seen.add(id);

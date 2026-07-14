@@ -11,6 +11,17 @@ This document records how AI contributed to the project and how its output was r
 
 ## Activity Log
 
+### 2026-07-14 - 中奖列表待发放状态高亮
+
+- Objective: 让用户在活动页中奖列表中快速区分待发放与已发放记录。
+- AI contribution: 核对首屏 Blade、游标分页接口和动态 DOM 渲染链路，设计并实现香槟金待发放与低饱和绿色已发放语义胶囊。
+- Prompt/task summary: 用户要求高亮中奖列表中的待发放状态，使发放进度更清晰。
+- Resulting artifacts: 首屏状态胶囊；分页接口归一化机器状态；动态分页一致渲染；响应式语义样式；功能测试、设计规格、实施计划和功能手册。
+- Human review and decisions: 用户确认采用推荐方案：不整行铺色，使用“● 待发放”和“✓ 已发放”胶囊，待发放不使用错误红色。
+- Validation and result: 专项测试 1 test / 8 assertions；最终 PHPUnit 36 tests / 255 assertions、Node 13 tests、Pint、Vite 58 modules 构建和 Composer 安全审计全部通过，界面规则扫描为 0 项问题。
+- Problems and corrections: 首次测试因本机 PHP 8.5 缺少 SQLite 驱动而中止；安装匹配版本的 `php8.5-sqlite3` 后恢复测试。接口继续保留本地化标签，并增加 `issued|pending` 机器状态，避免前端依赖中文文案判断样式。
+- Evidence/links: `resources/views/game/index.blade.php`; `resources/js/app.js`; `resources/css/app.css`; `tests/Feature/ActivityFlowTest.php`。
+
 ### 2026-07-14 - 棋盘与记录区邻近布局设计
 
 - Objective: 消除棋盘与机会明细/中奖列表之间因右侧排行榜撑高双栏而产生的无效空白。

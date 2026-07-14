@@ -68,6 +68,7 @@ class GameController extends Controller
                 'id' => (int) $row->id,
                 'created_at' => $row->created_at,
                 'prize_name' => $row->prize_name,
+                'status' => $row->status === 'issued' ? 'issued' : 'pending',
                 'status_label' => $row->status === 'issued' ? '已发放' : '待发放',
             ])->values(),
             'next_cursor' => $page['next_cursor'],

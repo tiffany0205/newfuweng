@@ -178,6 +178,92 @@ class ActivityFlowTest extends TestCase
         $this->actingAs($user)->getJson('/activity/records/winnings?cursor=0')->assertUnprocessable();
     }
 
+    public function test_task_reward_records_return_private_invite_pages_and_qualified_recharges(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        $other = User::where('email', 'admin@example.com')->firstOrFail();
+        $activityId = (int) DB::table('activities')->value('id');
+        $inviteIds = [];
+
+        for ($index = 1; $index <= 12; $index++) {
+            $friend = User::create([
+                'name' => "好友{$index}",
+                'email' => "friend{$index}@example.com",
+                'password' => 'password',
+                'invite_code' => "FRIEND{$index}",
+                'invited_by' => $user->id,
+            ]);
+            $createdAt = now()->addMinutes($index);
+            $inviteId = DB::table('invitation_rewards')->insertGetId([
+                'activity_id' => $activityId,
+                'inviter_id' => $user->id,
+                'invitee_id' => $friend->id,
+                'register_awarded' => true,
+                'recharge_awarded' => $index === 12,
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]);
+            $inviteIds[] = $inviteId;
+            DB::table('chance_transactions')->insert([
+                'activity_id' => $activityId,
+                'user_id' => $user->id,
+                'type' => 'invite_register',
+                'amount' => 5,
+                'balance_after' => 100 + $index,
+                'business_key' => "invite-register-{$friend->id}",
+                'remark' => '邀请好友注册',
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ]);
+            if ($index === 12) {
+                DB::table('chance_transactions')->insert([
+                    'activity_id' => $activityId,
+                    'user_id' => $user->id,
+                    'type' => 'friend_recharge',
+                    'amount' => 10,
+                    'balance_after' => 122,
+                    'business_key' => "friend-recharge-{$friend->id}",
+                    'remark' => '好友首次充值达标',
+                    'created_at' => $createdAt->copy()->addHour(),
+                    'updated_at' => $createdAt->copy()->addHour(),
+                ]);
+            }
+        }
+
+        $outsider = User::create(['name' => '秘密好友', 'email' => 'secret@example.com', 'password' => 'password', 'invite_code' => 'SECRET01', 'invited_by' => $other->id]);
+        DB::table('invitation_rewards')->insert(['activity_id' => $activityId, 'inviter_id' => $other->id, 'invitee_id' => $outsider->id, 'register_awarded' => true, 'recharge_awarded' => false, 'created_at' => now()->addDay(), 'updated_at' => now()->addDay()]);
+
+        $firstPage = $this->actingAs($user)->getJson(route('game.records.task-rewards', ['type' => 'invite']))
+            ->assertOk()
+            ->assertJsonCount(10, 'data')
+            ->assertJsonPath('data.0.friend_name', '好***')
+            ->assertJsonPath('data.0.chance_awarded', 5)
+            ->assertJsonPath('has_more', true)
+            ->assertJsonPath('next_cursor', $inviteIds[2]);
+        $this->assertStringNotContainsString('秘密好友', $firstPage->getContent());
+
+        $this->actingAs($user)->getJson(route('game.records.task-rewards', ['type' => 'invite', 'cursor' => $firstPage->json('next_cursor')]))
+            ->assertOk()
+            ->assertJsonCount(2, 'data')
+            ->assertJsonPath('has_more', false)
+            ->assertJsonPath('next_cursor', null);
+
+        $this->actingAs($user)->getJson(route('game.records.task-rewards', ['type' => 'friend_recharge']))
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.friend_name', '好***')
+            ->assertJsonPath('data.0.chance_awarded', 10)
+            ->assertJsonPath('has_more', false);
+    }
+
+    public function test_task_reward_records_reject_invalid_type_and_cursor(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+
+        $this->actingAs($user)->getJson('/activity/task-reward-records?type=orders')->assertUnprocessable();
+        $this->actingAs($user)->getJson('/activity/task-reward-records?type=invite&cursor=0')->assertUnprocessable();
+    }
+
     public function test_only_admin_can_open_admin_page(): void
     {
         $this->actingAs(User::where('email', 'demo@example.com')->firstOrFail())->get('/admin')->assertForbidden();

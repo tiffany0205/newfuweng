@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class GameController extends Controller
@@ -71,6 +72,21 @@ class GameController extends Controller
             'next_cursor' => $page['next_cursor'],
             'has_more' => $page['has_more'],
         ]);
+    }
+
+    public function taskRewardRecords(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'type' => ['required', Rule::in(['invite', 'friend_recharge'])],
+            'cursor' => ['nullable', 'integer', 'min:1'],
+        ]);
+        $activity = $this->activity();
+        $cursor = isset($data['cursor']) ? (int) $data['cursor'] : null;
+        $page = $data['type'] === 'invite'
+            ? $this->inviteRewardPage($activity->id, $request->user()->id, $cursor)
+            : $this->friendRechargeRewardPage($activity->id, $request->user()->id, $cursor);
+
+        return response()->json($page);
     }
 
     public function checkin(Request $request): RedirectResponse
@@ -385,5 +401,85 @@ class GameController extends Controller
             'next_cursor' => $hasMore ? (int) $data->last()->id : null,
             'has_more' => $hasMore,
         ];
+    }
+
+    private function inviteRewardPage(int $activityId, int $userId, ?int $cursor): array
+    {
+        $query = DB::table('invitation_rewards')
+            ->join('users', 'users.id', '=', 'invitation_rewards.invitee_id')
+            ->where([
+                'invitation_rewards.activity_id' => $activityId,
+                'invitation_rewards.inviter_id' => $userId,
+                'invitation_rewards.register_awarded' => true,
+            ])
+            ->orderByDesc('invitation_rewards.id')
+            ->select('invitation_rewards.id', 'invitation_rewards.invitee_id', 'invitation_rewards.created_at', 'users.name');
+
+        if ($cursor !== null) {
+            $query->where('invitation_rewards.id', '<', $cursor);
+        }
+
+        $rows = $query->limit(11)->get();
+        $data = $rows->take(10)->values();
+        $amounts = DB::table('chance_transactions')
+            ->where(['activity_id' => $activityId, 'user_id' => $userId, 'type' => 'invite_register'])
+            ->whereIn('business_key', $data->map(fn ($row) => 'invite-register-'.$row->invitee_id))
+            ->pluck('amount', 'business_key');
+
+        return $this->taskRewardPageResponse($data->map(fn ($row) => [
+            'id' => (int) $row->id,
+            'friend_name' => $this->maskFriendName($row->name),
+            'occurred_at' => $row->created_at,
+            'chance_awarded' => (int) ($amounts['invite-register-'.$row->invitee_id] ?? 5),
+        ]), $rows->count() > 10);
+    }
+
+    private function friendRechargeRewardPage(int $activityId, int $userId, ?int $cursor): array
+    {
+        $query = DB::table('chance_transactions')
+            ->where(['activity_id' => $activityId, 'user_id' => $userId, 'type' => 'friend_recharge'])
+            ->orderByDesc('id');
+
+        if ($cursor !== null) {
+            $query->where('id', '<', $cursor);
+        }
+
+        $transactions = $query->limit(11)->get();
+        $inviteeIds = $transactions->map(fn ($row) => (int) str_replace('friend-recharge-', '', $row->business_key))->unique()->values();
+        $friends = DB::table('invitation_rewards')
+            ->join('users', 'users.id', '=', 'invitation_rewards.invitee_id')
+            ->where(['invitation_rewards.activity_id' => $activityId, 'invitation_rewards.inviter_id' => $userId, 'invitation_rewards.recharge_awarded' => true])
+            ->whereIn('invitation_rewards.invitee_id', $inviteeIds)
+            ->pluck('users.name', 'invitation_rewards.invitee_id');
+        $data = $transactions->filter(function ($row) use ($friends) {
+            $inviteeId = (int) str_replace('friend-recharge-', '', $row->business_key);
+
+            return $friends->has($inviteeId);
+        })->take(10)->values()->map(function ($row) use ($friends) {
+            $inviteeId = (int) str_replace('friend-recharge-', '', $row->business_key);
+
+            return [
+                'id' => (int) $row->id,
+                'friend_name' => $this->maskFriendName($friends[$inviteeId]),
+                'occurred_at' => $row->created_at,
+                'chance_awarded' => (int) $row->amount,
+            ];
+        });
+
+        return $this->taskRewardPageResponse($data, $transactions->count() > 10);
+    }
+
+    private function taskRewardPageResponse($data, bool $hasMore): array
+    {
+        return [
+            'data' => $data->values(),
+            'next_cursor' => $hasMore && $data->isNotEmpty() ? (int) $data->last()['id'] : null,
+            'has_more' => $hasMore,
+        ];
+    }
+
+    private function maskFriendName(string $name): string
+    {
+        return mb_substr($name, 0, 1).'***';
     }
 }

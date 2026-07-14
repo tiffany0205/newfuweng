@@ -11,6 +11,16 @@ This document records how AI contributed to the project and how its output was r
 
 ## Activity Log
 
+### 2026-07-14 - 排行榜冠军奖品型号升级
+
+- Objective: 将排行榜第一名奖品从 iPhone 16 Pro 统一升级为 iPhone 17 Pro。
+- AI contribution: 盘点生产配置、排行榜组件、奖品 SVG、当前文档、设计稿和回归测试中的型号引用，并区分当前交付物与历史设计记录。
+- Prompt/task summary: 用户要求把苹果 16 Pro 奖品更换为苹果 17 Pro。
+- Resulting artifacts: `docs/superpowers/specs/2026-07-14-iphone-17-pro-ranking-prize-design.md`。
+- Human review and decisions: 用户指定新奖品型号为 iPhone 17 Pro，其他排名奖励不变。
+- Validation and result: 实现与全量验证结果在交付前补录。
+- Evidence/links: `config/activity.php`; `resources/views/components/ranking-rewards.blade.php`; `public/images/ranking/iphone-16-pro.svg`。
+
 ### 2026-07-14 - 星光地标漏记与位置文案调查
 
 - Objective: 查明用户到达星光地标后没有累计地标或幸运值，以及机会明细只显示“跳棋消耗”的原因。

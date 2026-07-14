@@ -16,9 +16,11 @@ This document records how AI contributed to the project and how its output was r
 - Objective: 消除棋盘与机会明细/中奖列表之间因右侧排行榜撑高双栏而产生的无效空白。
 - AI contribution: 检查 Grid 结构、棋盘比例、侧栏高度与记录区页面级定位，识别为双栏高度耦合问题，并比较左侧连续列、排行榜内滚动和棋盘抽屉三种方案。
 - Prompt/task summary: 用户反馈棋盘下方的机会明细和中奖列表距离过远、中间空白过高。
-- Resulting artifacts: `docs/superpowers/specs/2026-07-14-board-records-proximity-design.md`。
+- Resulting artifacts: 设计与实施计划；`.game-column` 左侧连续布局；PC 双列与手机单列记录区；页面结构及记录回归测试；功能手册。
 - Human review and decisions: 用户选择推荐的左侧连续内容列方案。
-- Validation and result: 布局规则扫描为 0 项；结构分析确认 `.records` 位于 `.dashboard` 外，右侧较高内容会推迟记录区出现。代码和测试尚未实施。
+- Validation and result: 布局规则扫描为 0 项；结构测试先因 `game-column` 不存在按预期失败，实施后记录测试发现旧断言依赖 HTML 缩进，改为语义正则后专项 3 tests / 19 assertions、Vite 58 modules 构建和布局扫描通过。最终 PHPUnit 35 tests / 247 assertions、Node 13 tests、Pint、Vite 58 modules 构建和 Composer 安全审计全部通过，布局扫描与完整界面扫描均为 0 项问题。
+- Problems and corrections: 根因不是记录区 margin，而是右侧侧栏撑高 dashboard 后，外部记录区被整体下推；通过左右列独立内容流解决，未限制排行榜高度或增加内部滚动。
+- Evidence/links: commit `1c67f64`; `resources/views/game/index.blade.php`; `resources/css/app.css`; `tests/Feature/ActivityFlowTest.php`。
 
 ### 2026-07-14 - 掷骰结果层级与棋盘格提示设计
 

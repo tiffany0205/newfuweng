@@ -11,6 +11,17 @@ This document records how AI contributed to the project and how its output was r
 
 ## Activity Log
 
+### 2026-07-14 - 从 0 到 1 项目讲解手册
+
+- Objective: 为新同事提供一份能够完整讲解项目业务、技术、部署和交接方式的统一入门文档。
+- AI contribution: 盘点当前代码版本、29 条路由、控制器职责、数据库迁移、奖励配置和现有四份专项文档，重新组织为业务闭环优先的项目导览。
+- Prompt/task summary: 用户需要向同事从 0 到 1 介绍项目，并要求将讲解文档提交到代码库。
+- Resulting artifacts: `docs/project-onboarding-guide.md`，包含业务目标、用户旅程、功能边界、技术架构、目录导读、数据模型、关键数据流、SQLite 选型、本地启动、测试、部署、运营、安全、60 分钟讲解议程和接手清单；README 新增入口。
+- Human review and decisions: 用户确认采用“一份主讲文档 + 现有专项文档索引”的结构。
+- Validation and result: 文档 446 行；章节、内部链接目标、版本与路由事实检查通过；无占位内容或空白错误。最终 PHPUnit 38 tests / 271 assertions、Node 13 tests、Vite 58 modules 构建和 Composer 安全审计通过，`git diff --check` 无问题。
+- Problems and corrections: 早期讨论中的 PHP 7.4/Laravel 8 与当前代码不一致；文档明确以 `composer.json` 的 PHP 8.2+/Laravel 12 为准，并区分人工充值等演示能力与生产接入边界。
+- Evidence/links: `docs/project-onboarding-guide.md`; `README.md`; `composer.json`; `routes/web.php`。
+
 ### 2026-07-14 - 管理后台任务初始化与奖品发放整合
 
 - Objective: 修复管理后台任务区域可能为空、领奖申请长期无数据，以及领奖审核与中奖发放入口重复的问题。

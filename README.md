@@ -26,6 +26,7 @@ php artisan serve
 
 ## 产品文档
 
+- [从 0 到 1 项目讲解手册](docs/project-onboarding-guide.md)
 - [幸运跳棋大冒险活动设计方案](docs/lucky-checkers-activity-plan.md)
 - [部署文档](docs/deployment.md)
 - [操作手册](docs/operation-manual.md)

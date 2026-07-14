@@ -56,6 +56,8 @@
             role="button"
             tabindex="0"
             aria-label="第{{ $cell->position + 1 }}格，{{ $cell->label }}，点击查看效果"
+            aria-controls="cellInspector"
+            aria-expanded="false"
           >
             <span class="cell-pos">{{ $cell->position + 1 }}</span>
             <span class="cell-arrow {{ $dir }}">{{ $arrow }}</span>
@@ -207,7 +209,7 @@
   </details>
 </section>
 
-<div class="cell-inspector" id="cellInspector" hidden><button type="button" class="inspector-close">×</button><span class="inspector-type"></span><div class="inspector-main"><b class="inspector-icon"></b><div><h3></h3><p></p></div></div><div class="inspector-status"></div><a href="{{ route('help.index') }}#landmarks">查看完整玩法与地标图鉴 →</a></div>
+<div class="cell-inspector" id="cellInspector" role="dialog" aria-labelledby="cellInspectorTitle" data-cell-inspector hidden><button type="button" class="inspector-close" aria-label="关闭格子说明">×</button><span class="inspector-type"></span><div class="inspector-main"><b class="inspector-icon" aria-hidden="true"></b><div><h3 id="cellInspectorTitle"></h3><p></p></div></div><div class="inspector-status"></div><a href="{{ route('help.index') }}#landmarks">查看完整玩法与地标图鉴 →</a></div>
 <div class="legend-popover" id="boardLegend" role="dialog" aria-modal="true" aria-labelledby="legendTitle" hidden><div><b id="legendTitle">棋盘图例</b><button type="button" aria-label="关闭棋盘图例">×</button></div><ul><li><i class="legend-safe"></i><span>安全格</span><small>平稳通行，无事件</small></li><li><i class="legend-landmark"></i><span>地标格</span><small>收集印章与轻量增益</small></li><li><i class="legend-boost"></i><span>增益格</span><small>前进或额外机会</small></li><li><i class="legend-risk"></i><span>风险格</span><small>炸弹、后退或冰冻</small></li><li><i class="legend-reward"></i><span>奖励格</span><small>奖品、VIP 或电池</small></li></ul><a href="{{ route('help.index') }}">打开玩法说明与 FAQ</a></div>
 
 @if(!$state->tutorial_seen_at)

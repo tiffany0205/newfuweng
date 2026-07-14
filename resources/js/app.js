@@ -1,8 +1,10 @@
 import './bootstrap';
 import { feedbackPresentation, playFeedbackSound } from './game-feedback';
 import { initTaskRewardRecords } from './task-reward-records';
+import { initCellInspector } from './cell-inspector';
 
 initTaskRewardRecords();
+initCellInspector();
 
 function uuidv4(){return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=crypto.getRandomValues(new Uint8Array(1))[0]%16|0;return(c==='x'?r:r&0x3|0x8).toString(16)})}
 
@@ -158,32 +160,7 @@ document.querySelectorAll('.record-loader').forEach(loader => {
     }
 });
 
-// Board legend and contextual cell explanation (hover on PC, tap on mobile).
-const inspector = document.querySelector('#cellInspector');
-const categoryNames = { safe: '安全格', landmark: '地标格', boost: '增益格', risk: '风险格', reward: '奖励格' };
-function inspectCell(cell) {
-    if (!inspector) return;
-    const landmark = cell.dataset.category === 'landmark';
-    inspector.querySelector('.inspector-type').textContent = categoryNames[cell.dataset.category] || '棋盘格';
-    inspector.querySelector('.inspector-icon').textContent = cell.querySelector('.cell-icon')?.textContent || '◆';
-    inspector.querySelector('h3').textContent = cell.dataset.label;
-    inspector.querySelector('p').textContent = cell.dataset.description;
-    inspector.querySelector('.inspector-status').textContent = landmark
-        ? (cell.dataset.unlocked === '1' ? `已解锁 · 累计到访 ${cell.dataset.visits} 次` : '尚未解锁 · 首次到达可获得地标印章')
-        : '落地后系统会自动处理并显示结果';
-    inspector.hidden = false;
-}
-document.querySelectorAll('.cell').forEach(cell => {
-    cell.addEventListener('click', () => inspectCell(cell));
-    cell.addEventListener('mouseenter', () => { if (window.matchMedia('(hover:hover)').matches) inspectCell(cell); });
-    cell.addEventListener('keydown', event => {
-        if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            inspectCell(cell);
-        }
-    });
-});
-inspector?.querySelector('.inspector-close')?.addEventListener('click', () => inspector.hidden = true);
+// Board legend.
 const legend = document.querySelector('#boardLegend');
 document.querySelector('[data-open-legend]')?.addEventListener('click', () => {
     legend.hidden = false;
@@ -192,7 +169,6 @@ document.querySelector('[data-open-legend]')?.addEventListener('click', () => {
 legend?.querySelector('button')?.addEventListener('click', () => legend.hidden = true);
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape') {
-        if (inspector) inspector.hidden = true;
         if (legend) legend.hidden = true;
     }
 });

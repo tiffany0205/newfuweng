@@ -40,7 +40,11 @@ class LandmarkHelpTest extends TestCase
         $response->assertOk()
             ->assertSee('class="cell type-battery category-reward', false)
             ->assertSee('id="soundToggle"', false)
-            ->assertSee('id="rollFeedbackModal"', false);
+            ->assertSee('id="rollFeedbackModal"', false)
+            ->assertSee('id="cellInspector"', false)
+            ->assertSee('role="dialog"', false)
+            ->assertSee('aria-labelledby="cellInspectorTitle"', false)
+            ->assertSee('data-cell-inspector', false);
         $this->assertSame(
             DB::table('board_cells')->where('category', 'landmark')->count(),
             substr_count($response->getContent(), 'class="landmark-badge"')

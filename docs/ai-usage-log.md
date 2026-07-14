@@ -16,9 +16,11 @@ This document records how AI contributed to the project and how its output was r
 - Objective: 解决走棋结果长句重点不清、幸运值增量与余额混淆，以及棋盘格 hover 提示过小且远离目标的问题。
 - AI contribution: 追踪后端 `result_text`、前端反馈映射和固定右下角格子说明，提出结构化结算响应、四层结果弹框、PC 锚定提示卡与手机底部面板方案。
 - Prompt/task summary: 用户以“后退 2 格后抵达梦想港湾并获得幸运值”为例，要求突出结算重点并增强格子 hover 说明。
-- Resulting artifacts: `docs/superpowers/specs/2026-07-14-roll-feedback-and-cell-tooltip-design.md`。
+- Resulting artifacts: 设计与实施计划；持久化 `result_summary`；分层结果弹框；PC 锚定格子说明与手机底部面板；PHP/Node 回归测试及功能手册。
 - Human review and decisions: 用户确认采用“结论优先 + 分项结算”和锚定格子浮层的推荐方案。
-- Validation and result: 设计阶段，代码和测试尚未实施。
+- Validation and result: 结构化结算测试先因 `result_summary` 缺失失败，随后相关 3 tests / 31 assertions 通过；前端层级测试先发现标题仍被“再次抵达地标”覆盖，修正后 Node 5 tests 通过；格子定位测试先因模块不存在失败，实现后又发现无浏览器环境提前引用 `window`，修正后 Node 4 tests、页面 1 test / 10 assertions、Vite 58 modules 构建和界面扫描通过。最终 PHPUnit 34 tests / 245 assertions、Node 13 tests、Pint、Vite 58 modules 构建和 Composer 安全审计全部通过，界面扫描为 0 项问题；新增迁移在现有 SQLite 副本以 0.99ms 成功执行；完整差异审查确认随机点数、奖励数值及历史 `result_text` 未改变。
+- Problems and corrections: 将本次幸运值变化与结算后累计值分开持久化；定位模块使用延迟读取全局窗口，兼容测试和非浏览器加载环境。
+- Evidence/links: commits `931d17c`, `23dcafd`, `66a508a`; `app/Http/Controllers/GameController.php`; `resources/js/game-feedback.js`; `resources/js/cell-inspector.js`。
 
 ### 2026-07-14 - 任务邀请与好友充值记录设计
 

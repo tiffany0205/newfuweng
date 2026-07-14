@@ -55,7 +55,6 @@ return new class extends Migration
                 DB::table('board_cells')->where('activity_id', $activityId)->update([
                     'landmark_code' => null,
                     'effect_code' => null,
-                    'description' => null,
                 ]);
                 foreach ($categories as $type => $category) {
                     DB::table('board_cells')->where(['activity_id' => $activityId, 'type' => $type])->update(['category' => $category]);

@@ -13,7 +13,7 @@
         <span class="stat-label">完成圈数</span>
       </div>
       <div class="stat-card">
-        <b class="stat-value position" id="position">{{ $state->current_position }}</b>
+        <b class="stat-value position" id="position">{{ $state->current_position + 1 }}</b>
         <span class="stat-label">当前格子</span>
       </div>
       <div class="stat-card">
@@ -142,7 +142,7 @@
           <li class="{{ $item->user_id === auth()->id() ? 'me' : '' }}">
             <span class="rank-num">{{ $rank + 1 }}</span>
             <span class="rank-name">{{ mb_substr($item->name, 0, 1) }}***</span>
-            <span class="rank-score">{{ $item->completed_laps }}圈 {{ $item->current_position }}格</span>
+            <span class="rank-score">{{ $item->completed_laps }}圈 {{ $item->current_position + 1 }}格</span>
           </li>
         @empty
           <li style="color:var(--text-muted);padding:20px;text-align:center;">暂无数据</li>

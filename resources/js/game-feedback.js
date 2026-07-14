@@ -17,12 +17,17 @@ const presentations = {
 export function feedbackPresentation(data) {
     const kind = Object.hasOwn(presentations, data.feedback_type) ? data.feedback_type : 'normal';
     const result = { ...presentations[kind] };
+    const destination = data.display_position
+        ? `第 ${data.display_position} 格 · ${data.final_cell_label || '当前位置'}`
+        : '';
 
     if (kind === 'landmark') {
         result.title = data.landmark_unlocked ? '新地标已解锁' : '再次抵达地标';
-        result.detail = data.landmark_unlocked
-            ? `地标进度 ${data.landmark_count ?? 0} / ${data.landmark_total ?? 0}`
-            : '访问次数和地标效果已经更新';
+        result.detail = [
+            destination,
+            `地标 ${data.landmark_count ?? 0} / ${data.landmark_total ?? 0}`,
+            `幸运值 ${data.lucky_points ?? 0}`,
+        ].filter(Boolean).join(' · ');
     } else if (kind === 'reward') {
         const reward = {
             vip: ['👑', 'VIP 等级提升', '尊享奖励已实时到账'],
@@ -38,6 +43,9 @@ export function feedbackPresentation(data) {
             backward: ['↩️', '棋子向后移动'],
         }[data.cell_type];
         if (risk) [result.emoji, result.title] = risk;
+    }
+    if (kind !== 'landmark' && destination) {
+        result.detail = `${destination} · ${result.detail}`;
     }
 
     return {

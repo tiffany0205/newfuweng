@@ -40,6 +40,16 @@ class ExperienceCenterTest extends TestCase
             ->assertSee('最终总进度榜');
     }
 
+    public function test_experience_ranking_positions_are_one_based(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        DB::table('activity_users')->where('user_id', $user->id)->update(['current_position' => 16]);
+
+        $this->actingAs($user)->get('/activity/center')
+            ->assertOk()
+            ->assertSee('0圈 17格');
+    }
+
     public function test_completed_checkin_task_can_only_be_claimed_once(): void
     {
         $user = User::where('email', 'demo@example.com')->firstOrFail();

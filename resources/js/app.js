@@ -3,6 +3,31 @@ import { feedbackPresentation, playFeedbackSound } from './game-feedback';
 
 function uuidv4(){return'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=crypto.getRandomValues(new Uint8Array(1))[0]%16|0;return(c==='x'?r:r&0x3|0x8).toString(16)})}
 
+function addRecordCell(row, value, className = '') {
+    const cell = document.createElement('td');
+    cell.textContent = value ?? '—';
+    if (className) cell.className = className;
+    row.appendChild(cell);
+}
+
+function prependChanceRecord(record) {
+    if (!record) return;
+    const tbody = document.querySelector('.records details:first-of-type tbody');
+    const id = String(record.id);
+    if (!tbody || tbody.querySelector(`[data-record-id="${id}"]`)) return;
+
+    tbody.querySelector('tr:not([data-record-id])')?.remove();
+    const row = document.createElement('tr');
+    const amount = Number(record.amount);
+    row.className = 'chance-record-row';
+    row.dataset.recordId = id;
+    addRecordCell(row, record.created_at);
+    addRecordCell(row, record.remark);
+    addRecordCell(row, `${amount > 0 ? '+' : ''}${amount}`, amount > 0 ? 'plus' : 'minus');
+    addRecordCell(row, record.balance_after);
+    tbody.prepend(row);
+}
+
 // Copy to clipboard (with HTTP fallback)
 function copyText(text) {
     if (navigator.clipboard && window.isSecureContext) {
@@ -58,7 +83,7 @@ document.querySelectorAll('.record-loader').forEach(loader => {
 
     function appendRecord(record) {
         const id = String(record.id);
-        if (seen.has(id)) return;
+        if (seen.has(id) || tbody.querySelector(`[data-record-id="${id}"]`)) return;
 
         const row = document.createElement('tr');
         row.dataset.recordId = id;
@@ -335,7 +360,7 @@ if (moveButton) moveButton.addEventListener('click', async () => {
         if (resultUnit) resultUnit.textContent = data.dice_value ? '点' : '';
         rollResult?.classList.add('is-result');
 
-        eventEl.textContent = data.result_text;
+        eventEl.textContent = `第 ${data.display_position} 格 · ${data.result_text}`;
 
         // Update stats
         const remainingChance = Math.max(0, Number(document.querySelector('#chance').textContent) - 1);
@@ -343,9 +368,10 @@ if (moveButton) moveButton.addEventListener('click', async () => {
         const centerChance = document.querySelector('#centerChance');
         if (centerChance) centerChance.textContent = remainingChance;
         document.querySelector('#lap').textContent = data.to_lap;
-        document.querySelector('#position').textContent = data.to_position;
+        document.querySelector('#position').textContent = data.display_position;
         const centerPosition = document.querySelector('#centerPosition');
-        if (centerPosition) centerPosition.textContent = Number(data.to_position) + 1;
+        if (centerPosition) centerPosition.textContent = data.display_position;
+        prependChanceRecord(data.chance_transaction);
 
         // Update board
         document.querySelectorAll('.cell').forEach(c => {

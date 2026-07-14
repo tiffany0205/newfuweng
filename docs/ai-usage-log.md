@@ -16,11 +16,11 @@ This document records how AI contributed to the project and how its output was r
 - Objective: 查明用户到达星光地标后没有累计地标或幸运值，以及机会明细只显示“跳棋消耗”的原因。
 - AI contribution: 对比迁移、Seeder、走棋控制器、SQLite 实际数据、机会流水、前端位置更新和排行榜显示，追踪旧库升级与全新测试库之间的差异。
 - Prompt/task summary: 用户反馈到达星光地标后累计活动没有变化，并要求每次掷骰显示实际位置。
-- Resulting artifacts: `docs/superpowers/specs/2026-07-14-landmark-backfill-and-position-display-design.md`。
+- Resulting artifacts: 设计说明与实施计划；幂等旧库修复迁移；运行时实际位置/机会流水响应；1～36 格界面显示；PHP、Node 与迁移回归测试。
 - Human review and decisions: 用户确认采用实际位置方案：机会明细显示点数、1～36 格位置和格子名称，并统一页面当前位置。
-- Validation and result: 确认星光广场在 Seeder 中为 `starlight_square / lucky_2`；确认旧迁移只建字段、不写入 12 个地标配置；确认“跳棋消耗”在点数生成前写入且之后未更新。
-- Problems and corrections: 之前的测试只覆盖 `migrate:fresh --seed`，错误地掩盖了已有数据库仅执行迁移时的配置缺口；本次设计增加无 Seeder 的升级测试与历史补偿。
-- Evidence/links: `database/migrations/2026_07_13_000300_create_landmark_help_tables.php`; `database/seeders/DatabaseSeeder.php`; `app/Http/Controllers/GameController.php`。
+- Validation and result: 旧库测试先因缺少修复迁移失败，随后以 1 test / 12 assertions 通过；运行时位置测试先因缺少 `display_position` 失败，随后 3 tests / 27 assertions 通过；前端测试先确认弹框、顶部和榜单仍显示旧值，随后通过。最终验证为 PHPUnit 30 tests / 195 assertions、Node 4 tests、Pint、Vite 56 modules 构建和 Composer 安全审计全部通过，界面扫描为 0 项问题；在本地 SQLite 副本实际执行迁移成功，确认 12 个地标且星光广场为 `landmark / starlight_square / lucky_2`。
+- Problems and corrections: 之前的测试只覆盖 `migrate:fresh --seed`，错误地掩盖了已有数据库仅执行迁移时的配置缺口；首次实现修复迁移时发现空库迁移会提前创建道具并与 Seeder 冲突，增加“仅已有活动数据才执行补偿”的保护后恢复兼容；提交前审查移除了清空非地标自定义说明的操作，避免升级覆盖运营文案；历史随机奖励无法可靠回放，明确只补偿地标和确定性幸运值。
+- Evidence/links: `database/migrations/2026_07_14_000500_sync_landmarks_and_move_positions.php`; `tests/Feature/LandmarkUpgradeTest.php`; `app/Http/Controllers/GameController.php`; `resources/js/game-feedback.js`。
 
 ### 2026-07-13 - 地标与掷骰反馈排查及设计
 
@@ -59,5 +59,5 @@ This document records how AI contributed to the project and how its output was r
 
 - Main AI contributions: 根因分析、交互设计、Laravel/SQLite 实现、统一前端反馈、斜置 3D 骰子、自动化测试、部署与操作文档。
 - Main human corrections and decisions: 明确紫色只属于正式地标；要求所有掷骰结果都有弹框和音效；确认分级反馈与斜置三面可见骰子方案。
-- Measured outcomes: 最终验证为 PHPUnit 25 tests / 158 assertions、Node 3 tests、Vite 56 modules 构建成功，Pint 与 Composer 审计通过，界面规范扫描 0 项问题。
+- Measured outcomes: 当前最终验证为 PHPUnit 30 tests / 195 assertions、Node 4 tests、Vite 56 modules 构建成功，Pint 与 Composer 审计通过，界面规范扫描 0 项问题。
 - Limitations and unresolved risks: Web Audio 受浏览器与设备音量策略影响，不支持时按设计静默降级；生产环境更新必须先执行数据库迁移和前端构建。

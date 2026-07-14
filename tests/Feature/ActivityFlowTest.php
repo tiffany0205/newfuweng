@@ -81,6 +81,20 @@ class ActivityFlowTest extends TestCase
             ->assertSee('current-position-aura', false);
     }
 
+    public function test_activity_position_display_is_one_based_and_supports_immediate_records(): void
+    {
+        $user = User::where('email', 'demo@example.com')->firstOrFail();
+        DB::table('activity_users')->where('user_id', $user->id)->update(['current_position' => 16]);
+
+        $response = $this->actingAs($user)->get('/activity')->assertOk();
+        $response->assertSee('<b class="stat-value position" id="position">17</b>', false)
+            ->assertSee('0圈 17格');
+        $this->assertStringContainsString(
+            'prependChanceRecord(data.chance_transaction)',
+            file_get_contents(resource_path('js/app.js'))
+        );
+    }
+
     public function test_activity_renders_square_board_with_direct_dice_trigger(): void
     {
         $user = User::where('email', 'demo@example.com')->firstOrFail();
